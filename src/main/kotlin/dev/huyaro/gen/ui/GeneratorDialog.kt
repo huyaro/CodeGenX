@@ -13,7 +13,7 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import dev.huyaro.gen.model.*
-import dev.huyaro.gen.util.initOptionsByModule
+import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.camelCase
 import dev.huyaro.gen.util.trimAndSplit
 import java.awt.Font
@@ -47,7 +47,7 @@ class GeneratorDialog constructor(
                 // add item changed event
                 cmbModule.component.addActionListener {
                     val selectedIndex = (it.source as ComboBox<*>).selectedIndex
-                    val curOpts = initOptionsByModule(data.modules[selectedIndex])
+                    val curOpts = buildOptions(data.modules[selectedIndex])
                     outDir.text(curOpts.outputDir)
                     textPkg.text(curOpts.rootPackage)
                 }

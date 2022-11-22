@@ -1,7 +1,6 @@
 package dev.huyaro.gen
 
 import com.intellij.database.psi.DbTable
-import com.intellij.database.util.DasUtil
 import com.intellij.database.view.getSelectedPsiElements
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -19,17 +18,14 @@ import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.JBEmptyBorder
-import dev.huyaro.gen.meta.Column
-import dev.huyaro.gen.meta.Table
 import dev.huyaro.gen.model.DataModel
 import dev.huyaro.gen.model.GeneratorOptions
-import dev.huyaro.gen.model.Language
 import dev.huyaro.gen.model.TypeRegistration
 import dev.huyaro.gen.ui.GeneratorDialog
 import dev.huyaro.gen.ui.TypesDialog
+import dev.huyaro.gen.util.buildOptions
+import dev.huyaro.gen.util.buildTable
 import dev.huyaro.gen.util.camelCase
-import dev.huyaro.gen.util.initOptionsByModule
-import dev.huyaro.gen.util.trimAndSplit
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import java.awt.Dimension
 import javax.swing.JComponent
@@ -62,7 +58,7 @@ internal class GeneratorAction : DumbAwareAction() {
             .toList()
         val dataModel = DataModel(validModules, selectedTables)
         // show dialog
-        DslConfigDialogUI(project, dataModel, "Code GeneratorX").show()
+        DslConfigDialogUI(project, dataModel, "Code Generator X").show()
     }
 
 }
@@ -72,7 +68,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
 
     private val log = Logger.getInstance(GeneratorAction::class.java)
     private val typeService = TypeRegistration.getInstance()
-    private val options = initLogs(initOptionsByModule(dataModel.modules[0]), dataModel.tables)
+    private val options = initLogs(buildOptions(dataModel.modules[0]), dataModel.tables)
 
     init {
         title = dialogTitle
@@ -84,13 +80,13 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
         tabPanel.minimumSize = Dimension(400, 400)
         tabPanel.preferredSize = Dimension(800, 800)
 
-        val genInst = GeneratorDialog(project, options, dataModel)
-        val genDialog = genInst.initPanel()
+        val genDialog = GeneratorDialog(project, options, dataModel)
+        val genPanel = genDialog.initPanel()
 
-        val generatorPanel = panel {
+        val genScrollPanel = panel {
             row {
-                genDialog.border = JBEmptyBorder(10)
-                scrollCell(genDialog)
+                genPanel.border = JBEmptyBorder(10)
+                scrollCell(genPanel)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
             }.resizableRow().layout(RowLayout.INDEPENDENT)
@@ -102,7 +98,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                     .resizableColumn()
 
                 button("Generate") {
-                    genDialog.apply()
+                    genPanel.apply()
                     // validate
                     if (options.author.isEmpty()) {
                         Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
@@ -112,10 +108,12 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                         Messages.showMessageDialog("FileType Can't be empty!", "Warning", null)
                     } else {
                         // fetch table data
-                        val tableList = dataModel.tables.map { buildTable(it) }
+                        val tableList = dataModel.tables.map {
+                            buildTable(typeService, it, options.columnFilter, options.language)
+                        }
                         try {
                             val outLogs = CodeGenerator(project, options, tableList).generate()
-                            genInst.flushLogs(outLogs)
+                            genDialog.flushLogs(outLogs)
                             notify("Generate code succeed!")
                         } catch (e: RuntimeException) {
                             log.error("Generate Error: ${e.message}")
@@ -127,7 +125,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                 .topGap(TopGap.SMALL)
         }
         // generator dialog
-        tabPanel.add("Generator", generatorPanel)
+        tabPanel.add("Generator", genScrollPanel)
 
         // type dialog
         val typesPanel = TypesDialog(project).initPanel()
@@ -161,58 +159,4 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     }
 
 
-    /**
-     * build full data for table metadata
-     */
-    private fun buildTable(dbTable: DbTable): Table {
-        val columnFilter = options.columnFilter
-        val lang = options.language
-        val indices = DasUtil.getIndices(dbTable)
-        val table = Table(name = dbTable.name, comment = dbTable.comment)
-
-        val excludeCols = trimAndSplit(columnFilter.exclude)
-        // filter columns and build table data
-        var columns = DasUtil.getColumns(dbTable).toList()
-        if (excludeCols.isNotEmpty()) {
-            val compare: (String, String) -> Boolean = { s1: String, s2: String ->
-                if (columnFilter.useRegex) Regex(s1).matches(s2) else s1.equals(s2, true)
-            }
-            excludeCols.forEach {
-                columns = columns.filter { col -> !compare(it, col.name) }.toList()
-            }
-        }
-
-        columns.forEach {
-            val colName = it.name
-            // There may be more than one identified type. e.g. tinyint unsigned
-            val colType = it.dataType.typeName.let { name -> name.split(" ")[0] }
-            val isPrimaryKey = DasUtil.isPrimary(it)
-            val jvmType = typeService.getJvmType(colType)
-            val jvmTypeName = if (lang == Language.KOTLIN) jvmType.simpleName else {
-                if (isPrimaryKey) jvmType.javaPrimitiveType?.simpleName else jvmType.javaObjectType.simpleName
-            }!!
-            val column = Column(
-                name = colName,
-                typeName = colType,
-                jvmType = jvmType,
-                jvmTypeName = jvmTypeName,
-                primaryKey = isPrimaryKey,
-                autoGenerated = DasUtil.isAutoGenerated(it),
-                length = it.dataType.length,
-                scale = it.dataType.scale,
-                nullable = !it.isNotNull,
-                defaultValue = it.default,
-                comment = it.comment,
-                uniqKey = indices.filter { idx ->
-                    !isPrimaryKey && idx.isUnique && DasUtil.containsName(colName, idx.columnsRef)
-                }.size() > 0
-            )
-            when {
-                column.primaryKey -> table.keyColumns.add(column.name)
-                column.uniqKey -> table.refColumns.add(column.name)
-            }
-            table.columns.add(column)
-        }
-        return table
-    }
 }
