@@ -1,0 +1,69 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>dev.huyaro.gen.x</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>CodeGenX</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="althyman@gmail.com" url="https://github.com/huyaro">CodeGenX</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    Features:
+    <ul>
+      <li>generate entity code for Jimmer ORM framework</li>
+    </ul>
+  ]]></description>
+    <change-notes><![CDATA[
+        <h4>0.0.3</h4>
+        <ul>
+            <li>Support non null type of kotlin</li>
+            <li>Support live log preview</li>
+        </ul>
+     ]]></change-notes>
+    <change-notes><![CDATA[
+        <h4>0.0.2</h4>
+        <ul>
+            <li>adjustment UI</li>
+            <li>fixed bug</li>
+        </ul>
+     ]]></change-notes>
+    <change-notes><![CDATA[
+        <h4>0.0.1</h4>
+        <ul>
+            <li>generate entity code by templates</li>
+        </ul>
+     ]]></change-notes>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <!--通过类生成代码，需要依赖Java插件-->
+    <depends>com.intellij.modules.java</depends>
+    <!--必须依赖Database Tool插件-->
+    <depends>com.intellij.database</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <!--通知服务-->
+        <notificationGroup id="dev.huyaro.genX.Notification"
+                           displayType="BALLOON"
+                           key="generatorX"/>
+        <!-- 用户自定义类型存储-->
+        <applicationService id="dev.huyaro.genX.RegisteredType"
+                            serviceImplementation="dev.huyaro.gen.model.TypeRegistration"/>
+    </extensions>
+
+    <actions>
+        <action id="dev.huyaro.gen" class="dev.huyaro.gen.GeneratorAction"
+                text="GeneratorX" description="Code generator" popup="true">
+            <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>
