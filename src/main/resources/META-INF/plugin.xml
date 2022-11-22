@@ -16,9 +16,16 @@
     <description><![CDATA[
     Features:
     <ul>
-      <li>generate entity code for Jimmer ORM framework</li>
+      <li>Code generation plug-in based on database table</li>
     </ul>
   ]]></description>
+    <change-notes><![CDATA[
+        <h4>0.0.4</h4>
+        <ul>
+            <li>Support persistent type mapping table</li>
+            <li>Fix some bug</li>
+        </ul>
+     ]]></change-notes>
     <change-notes><![CDATA[
         <h4>0.0.3</h4>
         <ul>
@@ -29,14 +36,14 @@
     <change-notes><![CDATA[
         <h4>0.0.2</h4>
         <ul>
-            <li>adjustment UI</li>
-            <li>fixed bug</li>
+            <li>Adjustment UI</li>
+            <li>Fix some bug</li>
         </ul>
      ]]></change-notes>
     <change-notes><![CDATA[
         <h4>0.0.1</h4>
         <ul>
-            <li>generate entity code by templates</li>
+            <li>Generate entity code by templates</li>
         </ul>
      ]]></change-notes>
 

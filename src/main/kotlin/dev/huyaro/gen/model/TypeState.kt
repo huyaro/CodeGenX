@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
  * @date 2022-11-15
  * @description build-in types
  */
-class TypeMapping {
+class TypeState {
     private val buildInTypes = mapOf<KClass<*>, Set<String>>(
         Int::class to setOf("int", "integer", "smallint", "mediumint", "tinyint"),
         String::class to setOf("char", "nchar", "varchar", "nvarchar", "clob", "nclob"),
@@ -25,17 +25,18 @@ class TypeMapping {
         LocalDateTime::class to setOf("datetime", "timestamp"),
     )
 
-    var typePairs = mutableMapOf<String, TypePair>()
+    var mapping = mutableMapOf<String, TypePair>()
 
     init {
         initTypes()
     }
 
     fun initTypes() {
+        mapping.clear()
         buildInTypes
-            .forEach { (java, jdbcTypes) ->
+            .forEach { (jvmType, jdbcTypes) ->
                 jdbcTypes.forEach {
-                    typePairs.putIfAbsent(it, TypePair(Tag.BUILD_IN, it, java))
+                    mapping.putIfAbsent(it, TypePair(Tag.BUILD_IN, it, jvmType.javaObjectType.name))
                 }
             }
     }
@@ -47,17 +48,17 @@ class TypeMapping {
     /**
      * 添加jdbcType
      */
-    fun addType(javaType: KClass<*>, jdbcType: String) {
+    fun addType(jvmType: String, jdbcType: String) {
         val lowerJdbc = jdbcType.lowercase()
-        val newPair = TypePair(Tag.BUILD_IN, lowerJdbc, javaType)
-        typePairs.compute(jdbcType) { _, _ -> newPair }
+        val newPair = TypePair(Tag.CUSTOM, lowerJdbc, jvmType)
+        mapping.compute(jdbcType) { _, _ -> newPair }
     }
 
     /**
      * 移除
      */
     fun removeType(jdbcType: String) {
-        typePairs.remove(jdbcType.lowercase())
+        mapping.remove(jdbcType.lowercase())
     }
 
 }

@@ -87,7 +87,6 @@ enum class Framework {
 
 // ==================For TypesDialog==================
 
-@ApiStatus.Internal
 enum class Tag {
     BUILD_IN, CUSTOM
 }
@@ -95,12 +94,21 @@ enum class Tag {
 /**
  * 表格中的每行数据
  */
-@ApiStatus.Internal
-data class TypePair(
-    val tag: Tag,
-    var jdbcType: String,
-    var javaType: KClass<*>
-)
+class TypePair() {
+    lateinit var tag: Tag
+    lateinit var jdbcType: String
+    lateinit var jvmType: String
+
+    constructor(tag: Tag, jdbcType: String, jvmType: String) : this() {
+        this.tag = tag
+        this.jdbcType = jdbcType
+        this.jvmType = jvmType
+    }
+
+    fun readJvmType(): KClass<*> {
+        return Class.forName(this.jvmType).kotlin
+    }
+}
 
 /**
  * 列数据
@@ -112,7 +120,7 @@ class TableColumnInfo(name: String, private val editable: Boolean = false) :
         return when {
             name.equals("Tag") -> item.tag.name.lowercase()
             name.equals("JdbcType") -> item.jdbcType
-            name.equals("JavaType") -> item.javaType.javaObjectType.name
+            name.equals("JvmType") -> item.readJvmType().javaObjectType.name
             else -> ""
         }
     }

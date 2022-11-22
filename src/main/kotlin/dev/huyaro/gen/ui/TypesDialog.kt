@@ -24,9 +24,9 @@ import javax.swing.ListSelectionModel
  */
 class TypesDialog constructor(private val project: Project?) {
     private val tableModel = ListTableModel<TypePair>(
-        TableColumnInfo("Tag", false),
-        TableColumnInfo("JdbcType", true),
-        TableColumnInfo("JavaType", false)
+        TableColumnInfo("Tag"),
+        TableColumnInfo("JdbcType"),
+        TableColumnInfo("JvmType")
     )
 
     var table = JBTable(tableModel)
@@ -45,7 +45,7 @@ class TypesDialog constructor(private val project: Project?) {
             columnModel.getColumn(1).preferredWidth = 100
             columnModel.getColumn(2).preferredWidth = 200
         }
-        typeService.state.typePairs.values.forEach { tableModel.addRow(it) }
+        typeService.typeState.mapping.values.forEach { tableModel.addRow(it) }
     }
 
     fun initPanel(): DialogPanel {
@@ -65,16 +65,16 @@ class TypesDialog constructor(private val project: Project?) {
         // 添加输入框
         val inputPanel = panel {
             lateinit var comJdbcType: JBTextField
-            lateinit var comJavaType: ComboBox<Class<*>>
+            lateinit var comJvmType: ComboBox<String>
             row {
                 comJdbcType = textField()
                     .label("JdbcType: ")
                     .gap(RightGap.COLUMNS)
                     .component
 
-                val typeItems = typeService.state.supportTypes().map { it.javaObjectType }
-                comJavaType = comboBox(typeItems)
-                    .label("JavaType: ")
+                val typeItems = typeService.typeState.supportTypes().map { it.javaObjectType.name }
+                comJvmType = comboBox(typeItems)
+                    .label("JvmType: ")
                     .component
             }.rowComment(
                 "Spaces in type are not supported! Custom jdbcType with the same name will override the built-in type",
@@ -88,7 +88,7 @@ class TypesDialog constructor(private val project: Project?) {
                             Messages.showMessageDialog("JdbcType Can't be empty!", "Warning", null)
                         } else {
                             // add row
-                            val typePair = TypePair(Tag.CUSTOM, comJdbcType.text, comJavaType.item.kotlin)
+                            val typePair = TypePair(Tag.CUSTOM, comJdbcType.text, comJvmType.item)
                             tableModel.addRow(typePair)
                             typeService.register(typePair)
                             comJdbcType.text = ""
@@ -96,29 +96,38 @@ class TypesDialog constructor(private val project: Project?) {
                         }
                     }
                     button(" Remove ") {
-                        var buildFlag = 0
-                        var delIndex = listOf<Int>()
-                        // Collect the items to be deleted first to avoid the index change problem of direct deletion
-                        table.selectedRows.forEach {
-                            if (tableModel.getItem(it).tag == Tag.BUILD_IN) {
-                                buildFlag++
-                            } else {
-                                delIndex = delIndex.plus(it)
-                            }
-                        }
-                        // Remove from back to front in index order
-                        delIndex = delIndex.sortedDescending()
-                        delIndex.forEach {
-                            typeService.unregister(tableModel.getItem(it))
-                            tableModel.removeRow(it)
-                        }
-                        // Prompt that built-in type is selected
-                        if (buildFlag > 0) {
+                        val rows = table.selectedRows
+                        if (rows.isEmpty()) {
                             Messages.showMessageDialog(
-                                "Delete operations[$buildFlag] for built-in types are ignored!",
+                                "Select row before deleting!",
                                 "Warning",
                                 null
                             )
+                        } else {
+                            var buildFlag = 0
+                            var delIndex = listOf<Int>()
+                            // Collect the items to be deleted first to avoid the index change problem of direct deletion
+                            rows.forEach {
+                                if (tableModel.getItem(it).tag == Tag.BUILD_IN) {
+                                    buildFlag++
+                                } else {
+                                    delIndex = delIndex.plusElement(it)
+                                }
+                            }
+                            // Remove from back to front in index order
+                            delIndex = delIndex.sortedDescending()
+                            delIndex.forEach {
+                                typeService.unregister(tableModel.getItem(it))
+                                tableModel.removeRow(it)
+                            }
+                            // Prompt that built-in type is selected
+                            if (buildFlag > 0) {
+                                Messages.showMessageDialog(
+                                    "Remove count[${delIndex.size}], built-in type cannot be deleted!",
+                                    "Warning",
+                                    null
+                                )
+                            }
                         }
                     }
                     button(" Reset ") {
@@ -131,7 +140,8 @@ class TypesDialog constructor(private val project: Project?) {
                             for (i in tableModel.items.lastIndex downTo 0) {
                                 tableModel.removeRow(i)
                             }
-                            typeService.state.typePairs.values.forEach { tableModel.addRow(it) }
+                            typeService.resetTypes()
+                            typeService.typeState.mapping.values.forEach { tableModel.addRow(it) }
                             scrollTable.verticalScrollBar.value = scrollTable.verticalScrollBar.minimum
                         }
                     }

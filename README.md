@@ -1,6 +1,6 @@
 CodeGenX
 ---
-> A simple code generator uses idea plugin
+> Code generation plug-in based on database table
 
 #### Features
 - generate code for entity and repository
@@ -10,3 +10,13 @@ CodeGenX
 #### Todo
 - [ ] generate code for repository
 - [ ] support for mybatis
+
+#### Screenshot
+- Generator
+![generator](screenshot/generator.png)
+
+- RegisteredType
+![registeredType](screenshot/registeredType.png)
+
+- IDEA Plugin
+![IDEA plugin](screenshot/plugin.png)

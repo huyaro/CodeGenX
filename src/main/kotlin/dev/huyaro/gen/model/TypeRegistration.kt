@@ -6,22 +6,26 @@ import com.intellij.openapi.components.RoamingType
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.jetbrains.rd.util.first
-import java.io.Serializable
 import kotlin.reflect.KClass
 
 /**
  * @author yanghu
  * @date 2022-11-18
- * @description Function details...
+ * @description Storage current types mapping
  */
 @State(
-    name = "GeneratorXSettings",
-    storages = [Storage(value = "generatorX-settings.xml", roamingType = RoamingType.DISABLED)]
+    name = "CodeGenX-Settings",
+    storages = [Storage(value = "codegenX-settings.xml", roamingType = RoamingType.DISABLED)]
 )
-class TypeRegistration : PersistentStateComponent<TypeMapping>, Serializable {
+class TypeRegistration : PersistentStateComponent<TypeState> {
 
-    private var typeMap = TypeMapping()
-    private val defaultType = mapOf("varchar" to TypePair(Tag.BUILD_IN, "varchar", String::class))
+    private val defaultType = mapOf("varchar" to TypePair(Tag.BUILD_IN, "varchar", "java.lang.String"))
+
+    /**
+     * Must be public
+     * @see <a href="https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html#implementing-the-state-class">stateClass</a>
+     */
+    var typeState = TypeState()
 
     companion object {
         fun getInstance(): TypeRegistration {
@@ -29,34 +33,36 @@ class TypeRegistration : PersistentStateComponent<TypeMapping>, Serializable {
         }
     }
 
-    override fun getState(): TypeMapping {
-        return typeMap
+    override fun getState(): TypeState {
+        return typeState
     }
 
-    override fun loadState(state: TypeMapping) {
-        typeMap.typePairs = state.typePairs
+    override fun loadState(state: TypeState) {
+        typeState.mapping = state.mapping
     }
 
     fun register(type: TypePair) {
-        typeMap.addType(type.javaType, type.jdbcType)
+        typeState.addType(type.jvmType, type.jdbcType)
     }
 
     fun unregister(type: TypePair) {
-        typeMap.removeType(type.jdbcType)
+        typeState.removeType(type.jdbcType)
     }
 
     fun resetTypes() {
-        typeMap.initTypes()
+        typeState.initTypes()
     }
 
     /**
      * filter type
      */
     fun getJvmType(jdbcType: String): KClass<*> {
-        return typeMap.typePairs
+        return typeState.mapping
             .filter { it.key == jdbcType.lowercase() }
             .ifEmpty { defaultType }
             .first().value
-            .javaType
+            .readJvmType()
     }
+
 }
+
