@@ -33,7 +33,7 @@ class TypesDialog constructor(private val project: Project?) {
 
     // 初始化数据
 //    val typeService = project?.service<TypeRegistrationService>()!!
-    private val typeService = TypeRegistration.getInstance()
+    private val typeService = TypeRegistration.newInstance()
 
     init {
         table = table.apply {
@@ -87,8 +87,13 @@ class TypesDialog constructor(private val project: Project?) {
                         if (comJdbcType.text.isEmpty()) {
                             Messages.showMessageDialog("JdbcType Can't be empty!", "Warning", null)
                         } else {
-                            // add row
-                            val typePair = TypePair(Tag.CUSTOM, comJdbcType.text, comJvmType.item)
+                            val lowerType = comJdbcType.text.lowercase()
+                            val typePair = TypePair(Tag.CUSTOM, lowerType, comJvmType.item)
+                            // filter exists jdbcType items and remove
+                            tableModel.items
+                                .firstOrNull { it.jdbcType == lowerType }
+                                ?.let { tableModel.removeRow(tableModel.indexOf(it)) }
+                            // add custom type
                             tableModel.addRow(typePair)
                             typeService.register(typePair)
                             comJdbcType.text = ""
@@ -140,7 +145,7 @@ class TypesDialog constructor(private val project: Project?) {
                             for (i in tableModel.items.lastIndex downTo 0) {
                                 tableModel.removeRow(i)
                             }
-                            typeService.resetTypes()
+                            typeService.typeState.initTypes()
                             typeService.typeState.mapping.values.forEach { tableModel.addRow(it) }
                             scrollTable.verticalScrollBar.value = scrollTable.verticalScrollBar.minimum
                         }

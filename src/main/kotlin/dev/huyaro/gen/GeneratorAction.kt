@@ -67,7 +67,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     DialogWrapper(project, null, true, IdeModalityType.MODELESS, false) {
 
     private val log = Logger.getInstance(GeneratorAction::class.java)
-    private val typeService = TypeRegistration.getInstance()
+    private val typeService = TypeRegistration.newInstance()
     private val options = initLogs(buildOptions(dataModel.modules[0]), dataModel.tables)
 
     init {

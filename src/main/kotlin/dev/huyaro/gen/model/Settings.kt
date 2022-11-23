@@ -105,6 +105,7 @@ class TypePair() {
         this.jvmType = jvmType
     }
 
+    // Change string type to kotlin type
     fun readJvmType(): KClass<*> {
         return Class.forName(this.jvmType).kotlin
     }

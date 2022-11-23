@@ -14,11 +14,18 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
+    Code generation plug-in based on database table.
     Features:
     <ul>
       <li>Code generation plug-in based on database table</li>
     </ul>
   ]]></description>
+    <change-notes><![CDATA[
+        <h4>0.0.4</h4>
+        <ul>
+            <li>Fix some bug</li>
+        </ul>
+     ]]></change-notes>
     <change-notes><![CDATA[
         <h4>0.0.4</h4>
         <ul>

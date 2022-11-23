@@ -5,7 +5,6 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.RoamingType
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.jetbrains.rd.util.first
 import kotlin.reflect.KClass
 
 /**
@@ -19,18 +18,17 @@ import kotlin.reflect.KClass
 )
 class TypeRegistration : PersistentStateComponent<TypeState> {
 
-    private val defaultType = mapOf("varchar" to TypePair(Tag.BUILD_IN, "varchar", "java.lang.String"))
+    private val defaultType = TypePair(Tag.BUILD_IN, "varchar", "java.lang.String")
 
     /**
      * Must be public
      * @see <a href="https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html#implementing-the-state-class">stateClass</a>
      */
-    var typeState = TypeState()
+    val typeState = TypeState()
 
     companion object {
-        fun getInstance(): TypeRegistration {
-            return ApplicationManager.getApplication().getService(TypeRegistration::class.java)
-        }
+        fun newInstance(): TypeRegistration =
+            ApplicationManager.getApplication().getService(TypeRegistration::class.java)
     }
 
     override fun getState(): TypeState {
@@ -41,28 +39,17 @@ class TypeRegistration : PersistentStateComponent<TypeState> {
         typeState.mapping = state.mapping
     }
 
-    fun register(type: TypePair) {
+    fun register(type: TypePair) =
         typeState.addType(type.jvmType, type.jdbcType)
-    }
 
-    fun unregister(type: TypePair) {
+    fun unregister(type: TypePair) =
         typeState.removeType(type.jdbcType)
-    }
-
-    fun resetTypes() {
-        typeState.initTypes()
-    }
 
     /**
      * filter type
      */
-    fun getJvmType(jdbcType: String): KClass<*> {
-        return typeState.mapping
-            .filter { it.key == jdbcType.lowercase() }
-            .ifEmpty { defaultType }
-            .first().value
-            .readJvmType()
-    }
+    fun getJvmType(jdbcType: String): KClass<*> =
+        typeState.mapping.getOrDefault(jdbcType.lowercase(), defaultType).readJvmType()
 
 }
 

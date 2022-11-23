@@ -43,7 +43,7 @@ class GeneratorDialog constructor(
             row("Module:") {
                 val cmbModule = comboBox(data.modules)
                     .bindItem(options::activeModule.toNullableProperty())
-                    .comment("Select module")
+                    .comment("Select the module")
                 // add item changed event
                 cmbModule.component.addActionListener {
                     val selectedIndex = (it.source as ComboBox<*>).selectedIndex
@@ -56,7 +56,7 @@ class GeneratorDialog constructor(
                     .bindText(options::rootPackage)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
-                    .comment("Select module root package")
+                    .comment("Select root package")
                 button("Choose...") {
                     val chooserDialog = PackageChooserDialog("Choose Package", project)
                     chooserDialog.show()
@@ -76,9 +76,9 @@ class GeneratorDialog constructor(
                     .bindText(options::superClass)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
-                    .comment("Select entity full path superclass. e.g.: com.hello.xxx")
+                    .comment("Select the superclass of entity. e.g.: com.hello.entity.BaseEntity")
                 button("Choose...") {
-                    val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass For Entity", project)
+                    val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass...", project)
                     classChooserDialog.show()
                     val selected = classChooserDialog.selected
                     if (selected != null) {
@@ -104,7 +104,7 @@ class GeneratorDialog constructor(
                             FileMode.values().forEach {
                                 radioButton(it.name, it)
                             }
-                        }.rowComment("Select the file type to be generated")
+                        }.rowComment("Select the file output method")
                     }.bind(options::fileMode)
 
                     row("FileType: ") {
@@ -114,7 +114,7 @@ class GeneratorDialog constructor(
                                 else options.fileTypes.minus(it)
                             }
                         }
-                    }.rowComment("Select the file type to be generated")
+                    }.rowComment("Select the file type")
                 }
             }, {
                 panel {
@@ -192,7 +192,7 @@ class GeneratorDialog constructor(
         val nowTime = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
             .format(LocalDateTime.now())
-        val timeLine = "==================$nowTime=================="
+        val timeLine = ">>>>>>>>>>$nowTime"
         logComp.insert("\n$timeLine\n$lines\n", logComp.text.length)
         logComp.autoscrolls = true
     }
@@ -234,7 +234,7 @@ class GeneratorDialog constructor(
             tableMapping = handleExtras(tableMapping, prefixStr, true)
             tableMapping = handleExtras(tableMapping, suffixStr, false)
 
-            flushLogs("\n\n========Reset Mapping  [Table] And [Class]========\n")
+            flushLogs("\n========Reset Mapping  [Table] And [Class]========")
             val logs = tableMapping.map { (tab, cls) ->
                 "[${tab.padEnd(maxLen)}]  ==>  [${camelCase(cls, true)}]"
             }.joinToString(separator = "\n")
@@ -243,7 +243,7 @@ class GeneratorDialog constructor(
             val logs = tables.joinToString(separator = "\n") {
                 "[${it.name.padEnd(maxLen)}]  ==>  [${camelCase(it.name, true)}]"
             }
-            flushLogs("\n========Default Mapping [Table] And [Class]========\n")
+            flushLogs("\n========Default Mapping [Table] And [Class]========")
             flushLogs(logs)
         }
     }
