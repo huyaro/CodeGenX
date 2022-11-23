@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 /**
  * @author yanghu
  * @date 2022-11-14
- * @description generator config
+ * @description generator source data
  */
 @ApiStatus.Internal
 data class DataModel(
@@ -17,6 +17,10 @@ data class DataModel(
     val tables: MutableList<DbTable>
 )
 
+// ==================For GeneratorDialog==================
+/**
+ * generator options
+ */
 @ApiStatus.Internal
 data class GeneratorOptions(
     var activeModule: Module?,
@@ -34,8 +38,6 @@ data class GeneratorOptions(
     var logs: String = ""
 )
 
-
-// ==================For GeneratorDialog==================
 /**
  * 过滤配置
  */
