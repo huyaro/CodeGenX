@@ -8,46 +8,33 @@
     <name>CodeGenX</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="althyman@gmail.com" url="https://github.com/huyaro">CodeGenX</vendor>
+    <vendor email="huyaro.dev@outlook.com" url="https://github.com/huyaro">CodeGenX</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Code generation plug-in based on database table.
+    Simple code generator
     Features:
     <ul>
-      <li>Code generation plug-in based on database table</li>
+      <li>Generate entity codes from database tables</li>
     </ul>
   ]]></description>
     <change-notes><![CDATA[
-        <h4>0.0.4</h4>
+        <h4>0.0.6</h4>
         <ul>
-            <li>Fix some bug</li>
+            <li>Popup menu on table only</li>
         </ul>
-     ]]></change-notes>
-    <change-notes><![CDATA[
-        <h4>0.0.4</h4>
+        <h4>0.0.5</h4>
         <ul>
             <li>Support persistent type mapping table</li>
             <li>Fix some bug</li>
         </ul>
-     ]]></change-notes>
-    <change-notes><![CDATA[
         <h4>0.0.3</h4>
         <ul>
             <li>Support non null type of kotlin</li>
             <li>Support live log preview</li>
         </ul>
-     ]]></change-notes>
-    <change-notes><![CDATA[
-        <h4>0.0.2</h4>
-        <ul>
-            <li>Adjustment UI</li>
-            <li>Fix some bug</li>
-        </ul>
-     ]]></change-notes>
-    <change-notes><![CDATA[
         <h4>0.0.1</h4>
         <ul>
             <li>Generate entity code by templates</li>

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.huyaro.gen"
-version = "0.0.5"
+version = "0.0.6"
 
 repositories {
     mavenCentral()
@@ -17,11 +17,11 @@ dependencies {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    localPath.set("/Users/yanghu/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/222.4345.14/IntelliJ IDEA.app")
-//    version.set("2022.1.4")
+//    localPath.set("/Users/yanghu/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/222.4459.24/IntelliJ IDEA.app")
+    version.set("2022.1.4")
     type.set("IU") // Target IDE Platform
-//    downloadSources.set(false)
-//    updateSinceUntilBuild.set(false)
+    downloadSources.set(true)
+    updateSinceUntilBuild.set(true)
 //    sandboxDir.set("${rootProject.rootDir}/idea-sandbox")
     plugins.set(
         listOf(
@@ -30,6 +30,7 @@ intellij {
         )
     )
 }
+
 
 tasks {
     // Set the JVM compatibility versions

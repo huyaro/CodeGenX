@@ -61,6 +61,17 @@ internal class GeneratorAction : DumbAwareAction() {
         DslConfigDialogUI(project, dataModel, "Code Generator X").show()
     }
 
+    /**
+     * only popup on the table
+     */
+    override fun update(e: AnActionEvent) {
+        var visible = true
+        val psiElements = getSelectedPsiElements(e.dataContext)
+        if (psiElements.isEmpty || psiElements[0] !is DbTable) {
+            visible = false
+        }
+        e.presentation.isEnabledAndVisible = visible
+    }
 }
 
 private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, dialogTitle: String) :
