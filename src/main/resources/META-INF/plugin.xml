@@ -55,7 +55,7 @@
         <!--通知服务-->
         <notificationGroup id="dev.huyaro.genX.Notification"
                            displayType="BALLOON"
-                           key="generatorX"/>
+                           key="CodeGenX"/>
         <!-- 用户自定义类型存储-->
         <applicationService id="dev.huyaro.genX.RegisteredType"
                             serviceImplementation="dev.huyaro.gen.model.TypeRegistration"/>
@@ -63,7 +63,7 @@
 
     <actions>
         <action id="dev.huyaro.gen" class="dev.huyaro.gen.GeneratorAction"
-                text="GeneratorX" description="Code generator" popup="true">
+                text="CodeGenX" description="Code generator" popup="true">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
     </actions>
