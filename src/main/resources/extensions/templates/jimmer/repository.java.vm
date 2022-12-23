@@ -1,26 +1,19 @@
-package ${package.Mapper};
+package ${fullPackage};
 
-import ${package.Entity}.${entity};
-import ${superMapperClassPackage};
-#if(${mapperAnnotationClass})
-import ${mapperAnnotationClass.name};
+#foreach($pkg in ${imports})
+import ${pkg};
 #end
 
 /**
  * <p>
- * $!{table.comment} Mapper 接口
+ * ${entityName}Repository 接口
  * </p>
  *
  * @author ${author}
- * @since ${date}
+ * @date ${date}
  */
-#if(${mapperAnnotationClass})
-@${mapperAnnotationClass.simpleName}
-#end
-#if(${kotlin})
-interface ${table.mapperName} : ${superMapperClass}<${entity}>
-#else
-public interface ${table.mapperName} extends ${superMapperClass}<${entity}> {
+@Repository
+public interface ${entityName}Repository extends JRepository<${entityName},${entityKeyType}> {
 
 }
-#end
+

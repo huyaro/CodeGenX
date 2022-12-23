@@ -12,6 +12,7 @@ import dev.huyaro.gen.meta.Table
 import dev.huyaro.gen.model.FileMode
 import dev.huyaro.gen.model.FileType
 import dev.huyaro.gen.model.GeneratorOptions
+import dev.huyaro.gen.model.Language
 import dev.huyaro.gen.util.VelocityTemplate
 import dev.huyaro.gen.util.camelCase
 import dev.huyaro.gen.util.trimAndSplit
@@ -49,9 +50,10 @@ constructor(private val project: Project, private val options: GeneratorOptions,
             return outLogs.toString()
         }
 
-        var outFiles = listOf<Path>()
+        val outFiles = mutableListOf<Path>()
         this.tables = naming(tables)
-        options.fileTypes.forEach {
+        val fileTypes = relateFileType(options.entityType, options.repositoryType)
+        fileTypes.forEach {
             val templateFile = getTemplate(resource, it)
                 .apply {
                     if (notExists()) {
@@ -82,7 +84,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
                             outLogs.append(line)
                             // render template
                             templateEngine.render(fl, templateFile, context)
-                            outFiles = outFiles.plusElement(fl)
+                            outFiles.add(fl)
 
                             line = "Generated File => [${fl}]\n"
                             log.warn(line)
@@ -91,18 +93,24 @@ constructor(private val project: Project, private val options: GeneratorOptions,
                     }
             }
         }
-
-        // format file
-        if (outFiles.isNotEmpty()) {
-            val psiManager = PsiManager.getInstance(project)
-            val fileList = outFiles.map { VfsUtil.findFileByIoFile(it.toFile(), true) }.toList()
-            val psiFiles = fileList.map { psiManager.findFile(it!!) }.toTypedArray()
-            val processor = ReformatCodeProcessor(project, psiFiles, null, false)
-            processor.run()
-        }
-
+        // format process
+        formatFiles(outFiles)
         // out log to insert view
         return outLogs.toString()
+    }
+
+    /**
+     * 处理选中的文件类型. 当entity未选中时, repository不生效
+     */
+    private fun relateFileType(entity: Boolean, repository: Boolean): Set<FileType> {
+        val fileTypes = mutableSetOf<FileType>()
+        if (entity) {
+            fileTypes.add(FileType.ENTITY)
+            if (repository) {
+                fileTypes.add(FileType.REPOSITORY)
+            }
+        }
+        return fileTypes
     }
 
     /**
@@ -123,7 +131,8 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         if (fullPath.notExists()) {
             Files.createDirectories(fullPath)
         }
-        return fullPath.resolve("$fileName.${options.language.suffix}")
+        val outName = if (fileType == FileType.REPOSITORY) "${fileName}Repository" else fileName
+        return fullPath.resolve("$outName.${options.language.suffix}")
     }
 
     /**
@@ -132,6 +141,41 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     private fun buildContext(fileType: FileType, tabRef: Table): Map<String, Any> {
         val context = mapOf<String, Any>()
         val today = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now())!!
+        val typeContext =
+            if (fileType == FileType.ENTITY) buildEntityContext(tabRef) else buildRepositoryContext(tabRef)
+
+        return context
+            .plus("author" to options.author)
+            .plus("date" to today)
+            .plus("fullPackage" to "${options.rootPackage}.${fileType.name.lowercase()}")
+            .plus(typeContext)
+    }
+
+    /**
+     * 构建repository类型上下文. 忽略没有主键的Entity.
+     */
+    private fun buildRepositoryContext(tabRef: Table): Map<String, Any> {
+        val context = mapOf<String, Any>()
+        if (tabRef.keyColumns.size > 0) {
+            val keyClassName = tabRef.columns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
+            val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
+            var superClass = "org.babyfish.jimmer.spring.repository."
+            superClass += if (options.language == Language.JAVA) "JRepository" else "KRepository"
+            val reposAnnot = "org.springframework.stereotype.Repository"
+
+            return context
+                .plus("entityKeyType" to keyClassName)
+                .plus("entityName" to tabRef.className)
+                .plus("imports" to listOf(entityCls, superClass, reposAnnot))
+        }
+        return context
+    }
+
+    /**
+     * 构建entity类型上下文
+     */
+    private fun buildEntityContext(tabRef: Table): Map<String, Any> {
+        val context = mapOf<String, Any>()
         var imports = tabRef.columns
             .map { it.jvmType.javaObjectType.name }
             .filter { !it.startsWith("java.lang") }
@@ -139,11 +183,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         if (options.superClass.isNotBlank()) {
             imports = imports.plus(options.superClass)
         }
-
         return context
-            .plus("author" to options.author)
-            .plus("date" to today)
-            .plus("fullPackage" to "${options.rootPackage}.${fileType.name.lowercase()}")
             .plus("imports" to imports)
             .plus("table" to tabRef)
             .plus("superClass" to options.superClass.split(".").last())
@@ -170,6 +210,17 @@ constructor(private val project: Project, private val options: GeneratorOptions,
             }
         }
         return tabsRef
+    }
+
+    /**
+     * 格式化文件
+     */
+    private fun formatFiles(outFiles: List<Path>) {
+        val psiManager = PsiManager.getInstance(project)
+        val genFiles = outFiles.map { VfsUtil.findFileByIoFile(it.toFile(), true) }.toList()
+        val psiFiles = genFiles.map { psiManager.findFile(it!!) }.toTypedArray()
+        val processor = ReformatCodeProcessor(project, psiFiles, null, true)
+        processor.run()
     }
 }
 

@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
@@ -37,6 +38,9 @@ class GeneratorDialog constructor(
     private lateinit var txtLogs: Cell<JBTextArea>
     private lateinit var txtPrefix: Cell<JBTextField>
     private lateinit var txtSuffix: Cell<JBTextField>
+
+    private lateinit var chkEntity: Cell<JBCheckBox>
+    private lateinit var chkRepository: Cell<JBCheckBox>
 
     fun initPanel(): DialogPanel {
         return panel {
@@ -108,13 +112,11 @@ class GeneratorDialog constructor(
                     }.bind(options::fileMode)
 
                     row("FileType: ") {
-                        FileType.values().forEach {
-                            checkBox(it.name).bindSelected({ options.fileTypes.contains(it) }) { stat ->
-                                options.fileTypes = if (stat) options.fileTypes.plus(it)
-                                else options.fileTypes.minus(it)
-                            }
-                        }
-                    }.rowComment("Select the file type")
+                        chkEntity = checkBox(FileType.ENTITY.name).bindSelected(options::entityType)
+                        chkRepository = checkBox(FileType.REPOSITORY.name)
+                            .bindSelected(options::repositoryType)
+                            .enabledIf(chkEntity.selected)
+                    }.rowComment("Entity type must be selected!")
                 }
             }, {
                 panel {
@@ -147,7 +149,6 @@ class GeneratorDialog constructor(
                         .horizontalAlign(HorizontalAlign.FILL)
                 }.rowComment("Use spaces to separate multiple items")
             }
-
 
             collapsibleGroup("Naming Strategy") {
                 groupRowsRange("[Table] Remove Prefix Or Suffix") {

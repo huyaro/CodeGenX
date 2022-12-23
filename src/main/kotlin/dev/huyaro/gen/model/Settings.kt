@@ -29,7 +29,8 @@ data class GeneratorOptions(
     var outputDir: String = "",
     var fileMode: FileMode = FileMode.SKIPPING,
     var superClass: String = "",
-    var fileTypes: Set<FileType> = mutableSetOf(FileType.ENTITY),
+    var entityType: Boolean = true,
+    var repositoryType: Boolean = true,
     var language: Language = Language.JAVA,
     var framework: Framework = Framework.JIMMER,
     var columnFilter: FilterRule = FilterRule(),
@@ -67,7 +68,7 @@ enum class FileMode {
  */
 @ApiStatus.Internal
 enum class FileType {
-    ENTITY
+    ENTITY, REPOSITORY
 }
 
 /**
@@ -114,7 +115,7 @@ class TypePair() {
 }
 
 /**
- * 列数据
+ * 对类型表格的渲染
  */
 class TableColumnInfo(name: String, private val editable: Boolean = false) :
     ColumnInfo<TypePair, String>(name) {

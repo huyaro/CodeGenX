@@ -17,10 +17,18 @@
     Simple code generator
     Features:
     <ul>
-      <li>Generate entity codes from database tables</li>
+      <li>Generate some codes from database tables</li>
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.0.8</h4>
+        <ul>
+          <li>Support the generation of repository types in jimmer-spring-boot-starter</li>
+        </ul>
+        <h4>0.0.7</h4>
+        <ul>
+            <li>Fix extra characters in the template</li>
+        </ul>
         <h4>0.0.6</h4>
         <ul>
             <li>Popup menu on table only</li>

@@ -115,7 +115,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                         Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
                     } else if (options.rootPackage.isEmpty()) {
                         Messages.showMessageDialog("Package Can't be empty!", "Warning", null)
-                    } else if (options.fileTypes.isEmpty()) {
+                    } else if (!options.entityType) {
                         Messages.showMessageDialog("FileType Can't be empty!", "Warning", null)
                     } else {
                         // fetch table data
