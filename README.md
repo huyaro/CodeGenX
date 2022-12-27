@@ -7,10 +7,6 @@ CodeGenX
 - support framework: jimmer
 - support language: java, kotlin
 
-#### Todo
-- [ ] generate code for repository
-- [ ] support for mybatis
-
 #### Screenshot
 - Generator
 ![generator](screenshot/generator.png)

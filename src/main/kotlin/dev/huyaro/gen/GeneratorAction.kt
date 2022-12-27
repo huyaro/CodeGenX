@@ -100,7 +100,9 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                 scrollCell(genPanel)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
-            }.resizableRow().layout(RowLayout.INDEPENDENT)
+            }
+                .resizableRow()
+                .layout(RowLayout.INDEPENDENT)
 
             row {
                 button("Cancel") {
