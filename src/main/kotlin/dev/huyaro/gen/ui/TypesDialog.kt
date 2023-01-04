@@ -80,8 +80,10 @@ class TypesDialog constructor(private val project: Project?) {
                 label("Important notes").bold()
             }
             row {
-                label("- If the type does not exist, \"String\" is used by default!\n" +
-                        "- Types with spaces are not supported!!")
+                text("1. If the type does not exist, [String] is used by default!")
+            }
+            row {
+                text("2. JdbcType with spaces are not supported!！")
             }
         }
 
@@ -180,7 +182,7 @@ class TypesDialog constructor(private val project: Project?) {
 /**
  * render table columns
  */
-class TableColumnInfo(name: String) : ColumnInfo<TypePair, String>(name) {
+private class TableColumnInfo(name: String) : ColumnInfo<TypePair, String>(name) {
 
     override fun valueOf(item: TypePair): String {
         return when {
@@ -204,7 +206,7 @@ class TableColumnInfo(name: String) : ColumnInfo<TypePair, String>(name) {
  * @author huyaro
  * @date 2023-1-3
  */
-class ResetButtonAction(
+private class ResetButtonAction(
     private val project: Project?,
     private val tableModel: ListTableModel<TypePair>
 ) :

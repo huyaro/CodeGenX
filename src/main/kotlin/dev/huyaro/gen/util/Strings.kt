@@ -1,5 +1,10 @@
 package dev.huyaro.gen.util
 
+import dev.huyaro.gen.model.Operator
+import dev.huyaro.gen.model.OptPosition
+import dev.huyaro.gen.model.OptTarget
+import dev.huyaro.gen.model.StrategyRule
+
 /**
  * @author huyaro
  * @date 2022-11-21
@@ -30,14 +35,58 @@ fun camelCase(str: String, firstUpper: Boolean = false, delimiter: String = "_")
 /**
  * trim all space and split
  */
-fun trimAndSplit(str: String): List<String> {
-    val value = emptyList<String>()
-    if (str.isEmpty() || str.isBlank()) {
-        return value
+fun trimAndSplit(value: String): List<String> {
+    val valueList = emptyList<String>()
+    if (value.isEmpty() || value.isBlank()) {
+        return valueList
     }
-    val splitArr = Regex("\\s+").replace(str, " ").split(" ")
-    if (splitArr.size == 1 && splitArr[0].isBlank()) {
-        return value
+    val splitArray = Regex("\\s+").replace(value, " ").split(",")
+    if (splitArray.size == 1 && splitArray[0].isBlank()) {
+        return valueList
     }
-    return splitArr
+    return splitArray
+}
+
+/**
+ * Check naming compliance
+ */
+fun isNamingNormal(name: String): Boolean {
+    val rule = "^[_a-zA-Z0-9]+$"
+    return Regex(rule).matches(name)
+}
+
+/**
+ * Apply Rules Rename
+ */
+fun naming(name: String, rules: List<StrategyRule>, target: OptTarget = OptTarget.Table): String {
+
+    val removeFun: (String, String, Boolean) -> String = { source: String, value: String, isPrefix: Boolean ->
+        if (isPrefix) source.removePrefix(value) else source.removeSuffix(value)
+    }
+    val addFun: (String, String, Boolean) -> String = { source: String, value: String, isPrefix: Boolean ->
+        if (isPrefix) "${value}_$source" else "${source}_$value"
+    }
+    val namingByTarget: (String) -> String = { source: String ->
+        if (target == OptTarget.Table) camelCase(source, true) else camelCase(source)
+    }
+
+    val filterRules = rules.filter { it.optValue.isNotBlank() && (it.target == target.name) }
+    if (filterRules.isEmpty()) {
+        return namingByTarget(name)
+    }
+
+    var tabName = name
+    filterRules
+        .map { rule ->
+            tabName = if (rule.position == OptPosition.Prefix.name) {
+                if (rule.operator == Operator.Add.name)
+                    addFun(tabName, rule.optValue, true)
+                else removeFun(tabName, rule.optValue, true)
+            } else {
+                if (rule.operator == Operator.Add.name)
+                    addFun(tabName, rule.optValue, false)
+                else removeFun(tabName, rule.optValue, false)
+            }
+        }
+    return namingByTarget(tabName)
 }

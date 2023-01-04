@@ -9,13 +9,9 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiManager
 import com.intellij.util.io.exists
 import dev.huyaro.gen.meta.Table
-import dev.huyaro.gen.model.FileMode
-import dev.huyaro.gen.model.FileType
-import dev.huyaro.gen.model.GeneratorOptions
-import dev.huyaro.gen.model.Language
+import dev.huyaro.gen.model.*
 import dev.huyaro.gen.util.VelocityTemplate
-import dev.huyaro.gen.util.camelCase
-import dev.huyaro.gen.util.trimAndSplit
+import dev.huyaro.gen.util.naming
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,46 +47,44 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         }
 
         val outFiles = mutableListOf<Path>()
-        this.tables = naming(tables)
+        this.tables = applyNaming(tables)
         val fileTypes = relateFileType(options.entityType, options.repositoryType)
         fileTypes.forEach {
-            val templateFile = getTemplate(resource, it)
-                .apply {
-                    if (notExists()) {
-                        val line = "Template File $this not Exists!\n"
-                        log.error(line)
+            val templateFile = getTemplate(resource, it).apply {
+                if (notExists()) {
+                    val line = "Template File $this not Exists!\n"
+                    log.error(line)
+                    outLogs.append(line)
+                }
+            }
+
+            tables.forEach { tab ->
+                getTargetFile(it, tab.className).let { fl ->
+                    if (fl.exists()) {
+                        val line: String
+                        if (options.fileMode == FileMode.Overwrite) {
+                            line = "Delete existing file ${fl.name}\n"
+                            Files.delete(fl)
+                        } else {
+                            line = "Skip existing files [${fl.name}]\n"
+                        }
+                        log.warn(line)
+                        outLogs.append(line)
+                    }
+                    if (fl.notExists()) {
+                        val context = buildContext(it, tab)
+                        var line = "Ready to render template [${templateFile}]\n"
+                        log.warn(line)
+                        outLogs.append(line)
+                        // render template
+                        templateEngine.render(fl, templateFile, context)
+                        outFiles.add(fl)
+
+                        line = "Generated File => [${fl}]\n"
+                        log.warn(line)
                         outLogs.append(line)
                     }
                 }
-
-            tables.forEach { tab ->
-                getTargetFile(it, tab.className)
-                    .let { fl ->
-                        if (fl.exists()) {
-                            val line: String
-                            if (options.fileMode == FileMode.Overwrite) {
-                                line = "Delete existing file ${fl.name}\n"
-                                Files.delete(fl)
-                            } else {
-                                line = "Skip existing files [${fl.name}]\n"
-                            }
-                            log.warn(line)
-                            outLogs.append(line)
-                        }
-                        if (fl.notExists()) {
-                            val context = buildContext(it, tab)
-                            var line = "Ready to render template [${templateFile}]\n"
-                            log.warn(line)
-                            outLogs.append(line)
-                            // render template
-                            templateEngine.render(fl, templateFile, context)
-                            outFiles.add(fl)
-
-                            line = "Generated File => [${fl}]\n"
-                            log.warn(line)
-                            outLogs.append(line)
-                        }
-                    }
             }
         }
         // format process
@@ -192,21 +186,12 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     /**
      * 应用命名策略
      */
-    private fun naming(tabsRef: List<Table>): List<Table> {
-        val tabPrefix = trimAndSplit(options.tableNaming.prefix)
-        val tabSuffix = trimAndSplit(options.tableNaming.suffix)
-        val colPrefix = trimAndSplit(options.columnNaming.prefix)
-        val colSuffix = trimAndSplit(options.columnNaming.suffix)
-
+    private fun applyNaming(tabsRef: List<Table>): List<Table> {
         tabsRef.forEach { tab ->
-            tabPrefix.forEach { tab.className = tab.className.removePrefix(it) }
-            tabSuffix.forEach { tab.className = tab.className.removeSuffix(it) }
-            tab.className = camelCase(tab.className, true)
+            tab.className = naming(tab.name, options.strategyRules)
 
             tab.columns.forEach { col ->
-                colPrefix.forEach { col.propName = col.propName.removePrefix(it) }
-                colSuffix.forEach { col.propName = col.propName.removeSuffix(it) }
-                col.propName = camelCase(col.propName)
+                col.propName = naming(col.name, options.strategyRules, OptTarget.Column)
             }
         }
         return tabsRef
@@ -219,7 +204,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         val psiManager = PsiManager.getInstance(project)
         val genFiles = outFiles.map { VfsUtil.findFileByIoFile(it.toFile(), true) }.toList()
         val psiFiles = genFiles.map { psiManager.findFile(it!!) }.toTypedArray()
-        val processor = ReformatCodeProcessor(project, psiFiles, null, true)
+        val processor = ReformatCodeProcessor(project, psiFiles, null, false)
         processor.run()
     }
 }

@@ -8,8 +8,7 @@ import org.babyfish.jimmer.sql.*
 
 /**
 * #if("$!{table.getComment()}" != "") ${table.getComment()} #else ${table.getName()}
-#end
-*
+* #end
 * @author ${author}
 * @date ${date}
 */

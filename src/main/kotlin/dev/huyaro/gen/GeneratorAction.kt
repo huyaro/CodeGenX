@@ -20,10 +20,8 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.JBEmptyBorder
 import dev.huyaro.gen.model.DataModel
 import dev.huyaro.gen.model.GeneratorOptions
-import dev.huyaro.gen.model.StrategyOptions
 import dev.huyaro.gen.model.TypeRegistration
 import dev.huyaro.gen.ui.GeneratorDialog
-import dev.huyaro.gen.ui.StrategyDialog
 import dev.huyaro.gen.ui.TypesDialog
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.buildTable
@@ -90,8 +88,8 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
 
     override fun createCenterPanel(): JComponent {
         val tabPanel = JBTabbedPane()
-        tabPanel.minimumSize = Dimension(400, 400)
-        tabPanel.preferredSize = Dimension(800, 800)
+        tabPanel.minimumSize = Dimension(400, 450)
+        tabPanel.preferredSize = Dimension(800, 900)
 
         val genDialog = GeneratorDialog(project, options, dataModel)
         val genPanel = genDialog.initPanel()
@@ -113,7 +111,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                     .resizableColumn()
 
                 button("Generate") {
-                    genPanel.apply()
+                    genDialog.optionPanel.apply()
                     // validate
                     if (options.author.isEmpty()) {
                         Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
@@ -124,11 +122,11 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                     } else {
                         // fetch table data
                         val tableList = dataModel.tables.map {
-                            buildTable(typeService, it, options.columnFilter, options.language)
+                            buildTable(typeService, it, options.excludeCols, options.language)
                         }
                         try {
                             val outLogs = CodeGenerator(project, options, tableList).generate()
-                            genDialog.flushLogs(outLogs)
+                            genDialog.logger.flush(outLogs)
                             notify("Generate code succeed!")
                         } catch (e: RuntimeException) {
                             log.error("Generate Error: ${e.message}")
@@ -141,11 +139,6 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
         }
         // generator dialog
         tabPanel.add("Generator", genScrollPanel)
-
-        // // strategy dialog
-        val strategy = StrategyOptions()
-        val stgPanel = StrategyDialog(strategy).initPanel()
-        tabPanel.add("Strategy", stgPanel)
 
         // type dialog
         val typesPanel = TypesDialog(project).initPanel()

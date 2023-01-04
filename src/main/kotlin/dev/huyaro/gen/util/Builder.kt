@@ -7,7 +7,6 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.util.io.isDirectory
 import dev.huyaro.gen.meta.Column
 import dev.huyaro.gen.meta.Table
-import dev.huyaro.gen.model.FilterRule
 import dev.huyaro.gen.model.GeneratorOptions
 import dev.huyaro.gen.model.Language
 import dev.huyaro.gen.model.TypeRegistration
@@ -46,21 +45,19 @@ fun buildOptions(module: Module): GeneratorOptions {
 fun buildTable(
     typeService: TypeRegistration,
     dbTable: DbTable,
-    columnFilter: FilterRule,
+    excludeValue: String,
     lang: Language
 ): Table {
     val indices = DasUtil.getIndices(dbTable)
     val table = Table(name = dbTable.name, comment = dbTable.comment)
 
-    val excludeCols = trimAndSplit(columnFilter.exclude)
+    val excludeCols = trimAndSplit(excludeValue)
     // filter columns and build table data
     var columns = DasUtil.getColumns(dbTable).toList()
     if (excludeCols.isNotEmpty()) {
-        val compare: (String, String) -> Boolean = { s1: String, s2: String ->
-            if (columnFilter.useRegex) Regex(s1).matches(s2) else s1.equals(s2, true)
-        }
+        val match: (String, String) -> Boolean = { s1, s2 -> Regex(s1).matches(s2) }
         excludeCols.forEach {
-            columns = columns.filter { col -> !compare(it, col.name) }.toList()
+            columns = columns.filter { col -> !match(it, col.name) }.toList()
         }
     }
 

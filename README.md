@@ -2,7 +2,7 @@ CodeGenX
 ---
 > Code generation plug-in based on database table
 
-#### Features
+#### Support Features
 - generate code for entity and repository
 - support framework: jimmer
 - support language: java, kotlin

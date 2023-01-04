@@ -21,6 +21,14 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.0</h4>
+        <ul>
+          <li>Add function description, adjust display format</li>
+        </ul>
+        <h4>0.0.9</h4>
+        <ul>
+          <li>Refactor UI for better experience</li>
+        </ul>
         <h4>0.0.8</h4>
         <ul>
           <li>Support the generation of repository types in jimmer-spring-boot-starter</li>

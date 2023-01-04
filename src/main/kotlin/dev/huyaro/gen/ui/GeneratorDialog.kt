@@ -1,25 +1,39 @@
 package dev.huyaro.gen.ui
 
+import com.intellij.database.psi.DbTable
 import com.intellij.database.view.actions.font
+import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
 import com.intellij.ide.util.TreeJavaClassChooserDialog
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.ui.AnActionButton
+import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
+import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.ColumnInfo
+import com.intellij.util.ui.ListTableModel
 import dev.huyaro.gen.model.*
 import dev.huyaro.gen.util.buildOptions
-import dev.huyaro.gen.util.camelCase
-import dev.huyaro.gen.util.trimAndSplit
+import dev.huyaro.gen.util.isNamingNormal
+import dev.huyaro.gen.util.naming
+import java.awt.BorderLayout
 import java.awt.Font
+import java.awt.event.ItemEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import javax.swing.DefaultCellEditor
+import javax.swing.JTextField
+import javax.swing.ListSelectionModel
 
 /**
  * Generator Dialog ui
@@ -35,14 +49,41 @@ class GeneratorDialog constructor(
 
     private lateinit var outDir: Cell<TextFieldWithBrowseButton>
     private lateinit var textPkg: Cell<JBTextField>
-    private lateinit var txtLogs: Cell<JBTextArea>
-    private lateinit var txtPrefix: Cell<JBTextField>
-    private lateinit var txtSuffix: Cell<JBTextField>
-
+    private lateinit var txtLog: Cell<JBTextArea>
     private lateinit var chkEntity: Cell<JBCheckBox>
     private lateinit var chkRepository: Cell<JBCheckBox>
 
+    lateinit var logger: LoggerComponent
+    lateinit var optionPanel: DialogPanel
+
     fun initPanel(): DialogPanel {
+        val genPanel = DialogPanel(BorderLayout())
+        optionPanel = initOptionPanel()
+        genPanel.add(optionPanel, BorderLayout.NORTH)
+
+        val logPanel = panel {
+            group("Logs") {
+                row {
+                    txtLog = textArea().rows(10)
+                        .horizontalAlign(HorizontalAlign.FILL)
+                        .bindText(options::logs)
+                        .font(Font("Hack", Font.ROMAN_BASELINE, 14))
+                    txtLog.component.isEditable = false
+                }
+            }
+        }
+
+        logger = LoggerComponent(txtLog)
+        val tablePanel = StrategyTableInfo(data.tables, options, logger).initTable()
+        genPanel.add(tablePanel, BorderLayout.CENTER)
+
+        // add log panel
+        genPanel.add(logPanel, BorderLayout.SOUTH)
+
+        return genPanel
+    }
+
+    private fun initOptionPanel(): DialogPanel {
         return panel {
             row("Module:") {
                 val cmbModule = comboBox(data.modules)
@@ -101,10 +142,6 @@ class GeneratorDialog constructor(
             }.layout(RowLayout.PARENT_GRID)
                 .rowComment("Select the output directory. e.g.: /Project/src/main/java")
 
-            panel {
-
-            }
-
             twoColumnsRow({
                 panel {
                     buttonsGroup {
@@ -142,58 +179,30 @@ class GeneratorDialog constructor(
                 }
             }).layout(RowLayout.INDEPENDENT)
 
-            group("Filter Strategy") {
-                row {
-                    checkBox("UseRegex").bindSelected(
-                        { options.columnFilter.useRegex },
-                        { options.columnFilter.useRegex = it })
-                        .gap(RightGap.COLUMNS)
-                    textField().label("[Columns] exclude: ")
-                        .bindText({ options.columnFilter.exclude }, { options.columnFilter.exclude = it })
-                        .horizontalAlign(HorizontalAlign.FILL)
-                }.rowComment("Use commas to separate multiple items")
-            }
-
-            // collapsibleGroup("Naming Strategy") {
-            //     groupRowsRange("[Table] Remove Prefix Or Suffix") {
-            //         row {
-            //             txtPrefix = textField().label("Prefix: ")
-            //                 .bindText({ options.tableNaming.prefix }, { options.tableNaming.prefix = it })
-            //             txtSuffix = textField().label("Suffix: ")
-            //                 .bindText({ options.tableNaming.suffix }, { options.tableNaming.suffix = it })
-            //             button("Test It") {
-            //                 namingTest()
-            //             }
-            //         }.rowComment("Use spaces to separate multiple items")
-            //     }
-            //
-            //     groupRowsRange("[Column] Remove Prefix Or Suffix") {
-            //         row {
-            //             textField().label("Prefix: ")
-            //                 .bindText({ options.columnNaming.prefix }, { options.columnNaming.prefix = it })
-            //             textField().label("Suffix: ")
-            //                 .bindText({ options.columnNaming.suffix }, { options.columnNaming.suffix = it })
-            //         }.rowComment("Use spaces to separate multiple items")
-            //     }
-            // }
-
-            group("Logs") {
-                row {
-                    txtLogs = textArea().rows(10)
-                        .horizontalAlign(HorizontalAlign.FILL)
-                        .bindText(options::logs)
-                        .font(Font("Hack", Font.ROMAN_BASELINE, 14))
-                    txtLogs.component.isEditable = false
-                }
+            row {
+                textField().label("Exclude columns: ")
+                    .bindText(options::excludeCols)
+                    .horizontalAlign(HorizontalAlign.FILL)
+            }.rowComment("Use commas to separate multiple items")
+            row {
+                label("Configure naming rules")
+                contextHelp(
+                    "1.The naming rule object is the [original table name]  " +
+                            "2.The test function is only for [table objects]  " +
+                            "3.Test the configuration using the [last button] on the toolbar.",
+                    "Usage help"
+                )
             }
         }
     }
+}
 
+class LoggerComponent(private val txtLog: Cell<JBTextArea>) {
     /**
      * 输出日志
      */
-    fun flushLogs(lines: String) {
-        val logComp = txtLogs.component
+    fun flush(lines: String) {
+        val logComp = txtLog.component
         val nowTime = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
             .format(LocalDateTime.now())
@@ -201,57 +210,156 @@ class GeneratorDialog constructor(
         logComp.insert("\n$timeLine\n$lines\n", logComp.text.length)
         logComp.autoscrolls = true
     }
+}
+
+/**
+ * strategy table
+ */
+private class StrategyTableInfo(
+    val tableList: List<DbTable>,
+    val options: GeneratorOptions,
+    val logger: LoggerComponent
+) {
+    private val tableModel = ListTableModel<StrategyRule>(
+        StrategyTableColumnInfo("Operator"),
+        StrategyTableColumnInfo("Target"),
+        StrategyTableColumnInfo("Position"),
+        StrategyTableColumnInfo("Value")
+    )
+    private var table = JBTable(tableModel)
+    private val optItems = mapOf(
+        0 to Operator.values().map { it.name },
+        1 to OptTarget.values().map { it.name },
+        2 to OptPosition.values().map { it.name }
+    )
+
+    init {
+        table.apply {
+            setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
+            tableHeader.reorderingAllowed = false
+            rowSelectionAllowed = true
+            fillsViewportHeight = true
+            rowHeight = 25
+        }
+        // render columns with combobox or text
+        renderColumns()
+    }
 
     /**
-     * apply naming rules with table and output logs
+     * init strategy config table
      */
-    private fun namingTest() {
-        // remove prefix or suffix
-        val removeFun: (String, String, Boolean) -> (String) =
-            { s: String, extra: String, isPrefix: Boolean ->
-                if (isPrefix) s.removePrefix(extra) else s.removeSuffix(extra)
-            }
+    fun initTable(): JBScrollPane {
+        // add toolbar
+        val decorator = ToolbarDecorator.createDecorator(table)
+        // add "test" tool button
+        decorator.addExtraAction(TestButtonAction(tableList, tableModel, logger))
+        // override "add" event
+        decorator.setAddAction { _ -> addDefaultRow() }
+        // wrapper table with scroll
+        return JBScrollPane(decorator.createPanel())
+    }
 
-        // handle prefix and suffix
-        val handleExtras: (Map<String, String>, String, Boolean) -> Map<String, String> =
-            { tabMap: Map<String, String>, input: String, isPrefix: Boolean ->
-                var tabMapping = tabMap
-                val extras = trimAndSplit(input)
-                if (extras.isNotEmpty()) {
-                    tabMap.forEach { (tab, cls) ->
-                        var clsName = cls
-                        extras.forEach { extra ->
-                            clsName = removeFun(clsName, extra, isPrefix)
-                        }
-                        tabMapping = tabMapping.plus(tab to clsName)
+    /**
+     * render columns with combobox or text
+     */
+    private fun renderColumns() {
+        optItems.map { entry ->
+            val comboBox = ComboBox(entry.value.toTypedArray())
+            val column = table.columnModel.getColumn(entry.key)
+            column.cellEditor = DefaultCellEditor(comboBox)
+
+            // Add combobox changed listener
+            comboBox.addItemListener {
+                if (it.stateChange == ItemEvent.SELECTED) {
+                    val item = tableModel.getItem(table.selectedRow)
+                    val itemValue = it.item as String
+                    when (entry.key) {
+                        0 -> item.operator = itemValue
+                        1 -> item.target = itemValue
+                        2 -> item.position = itemValue
                     }
                 }
-                tabMapping
             }
-
-        val tables = data.tables
-        val prefixStr = txtPrefix.component.text
-        val suffixStr = txtSuffix.component.text
-
-        var tableMapping = tables.associate { it.name to it.name }
-        val maxLen = tables.maxOf { it.name.length }
-        if (prefixStr.isNotBlank() || suffixStr.isNotBlank()) {
-            tableMapping = handleExtras(tableMapping, prefixStr, true)
-            tableMapping = handleExtras(tableMapping, suffixStr, false)
-
-            flushLogs("\n========Reset Mapping  [Table] And [Class]========")
-            val logs = tableMapping.map { (tab, cls) ->
-                "[${tab.padEnd(maxLen)}]  ==>  [${camelCase(cls, true)}]"
-            }.joinToString(separator = "\n")
-            flushLogs(logs)
-        } else {
-            val logs = tables.joinToString(separator = "\n") {
-                "[${it.name.padEnd(maxLen)}]  ==>  [${camelCase(it.name, true)}]"
-            }
-            flushLogs("\n========Default Mapping [Table] And [Class]========")
-            flushLogs(logs)
         }
+
+        val textField = JTextField("")
+        val colText = table.columnModel.getColumn(3)
+        colText.cellEditor = DefaultCellEditor(textField)
+        textField.addActionListener { evt ->
+            val item = tableModel.getItem(table.selectedRow)
+            val optVal = evt.actionCommand?.trim() ?: ""
+            if (optVal.isNotBlank() && isNamingNormal(optVal)) {
+                item.optValue = optVal
+            } else {
+                logger.flush("Wrong naming [$optVal] !!")
+            }
+        }
+    }
+
+    /**
+     * sync options strategy rules
+     */
+    private fun addDefaultRow() {
+        tableModel.addRow(StrategyRule())
+        options.strategyRules = tableModel.items
+    }
+}
+
+/**
+ * render table columns
+ */
+private class StrategyTableColumnInfo(name: String) : ColumnInfo<StrategyRule, String>(name) {
+
+    override fun valueOf(item: StrategyRule): String {
+        return when {
+            name.equals("Operator") -> item.operator
+            name.equals("Target") -> item.target
+            name.equals("Position") -> item.position
+            name.equals("Value") -> item.optValue
+            else -> ""
+        }
+    }
+
+    override fun isCellEditable(item: StrategyRule?): Boolean {
+        return true
+    }
+
+    override fun setValue(item: StrategyRule?, value: String?) {
+        super.setValue(item, value)
     }
 }
 
 
+/**
+ * @author huyaro
+ * @date 2023-1-3
+ */
+private class TestButtonAction(
+    private val dbTables: List<DbTable>,
+    private val tableModel: ListTableModel<StrategyRule>,
+    private val logger: LoggerComponent
+) :
+    AnActionButton("Test Rule...", AllIcons.Actions.Checked) {
+    private lateinit var nameMapping: Map<String, String>
+
+    override fun actionPerformed(e: AnActionEvent) {
+        // Filter not blank value and table rules
+        val filterRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Table.name }
+        if (filterRules.isEmpty()) {
+            logger.flush("No applicable rules found! Please add rules first!")
+            return
+        }
+
+        // Circular apply rules
+        nameMapping = dbTables.map { tab ->
+            mapOf(tab.name to naming(tab.name, filterRules))
+        }.reduce { acc, map -> acc.plus(map) }
+
+        val maxLen = dbTables.maxOf { it.name.length }
+        logger.flush("\n========Test Mapping [Table] And [Class]========")
+        val logs = nameMapping
+            .map { (tab, cls) -> "[${tab.padEnd(maxLen)}]  ==>  [$cls]" }
+            .joinToString(separator = "\n")
+        logger.flush(logs)
+    }
+}
