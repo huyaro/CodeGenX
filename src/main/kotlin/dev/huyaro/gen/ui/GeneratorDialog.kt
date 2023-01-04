@@ -252,7 +252,10 @@ private class StrategyTableInfo(
         // add toolbar
         val decorator = ToolbarDecorator.createDecorator(table)
         // add "test" tool button
-        decorator.addExtraAction(TestButtonAction(tableList, tableModel, logger))
+        val testButtonAction = TestButtonAction(tableList, tableModel, logger)
+        // Disable when there is no data in the table
+        testButtonAction.addCustomUpdater { tableModel.items.size > 0 }
+        decorator.addExtraAction(testButtonAction)
         // override "add" event
         decorator.setAddAction { _ -> addDefaultRow() }
         // wrapper table with scroll
