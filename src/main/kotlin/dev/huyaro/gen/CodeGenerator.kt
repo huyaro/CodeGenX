@@ -26,7 +26,7 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-15
  * @description generate code with config
  */
@@ -68,7 +68,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
                     .let { fl ->
                         if (fl.exists()) {
                             val line: String
-                            if (options.fileMode == FileMode.OVERWRITE) {
+                            if (options.fileMode == FileMode.Overwrite) {
                                 line = "Delete existing file ${fl.name}\n"
                                 Files.delete(fl)
                             } else {
@@ -105,9 +105,9 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     private fun relateFileType(entity: Boolean, repository: Boolean): Set<FileType> {
         val fileTypes = mutableSetOf<FileType>()
         if (entity) {
-            fileTypes.add(FileType.ENTITY)
+            fileTypes.add(FileType.Entity)
             if (repository) {
-                fileTypes.add(FileType.REPOSITORY)
+                fileTypes.add(FileType.Repository)
             }
         }
         return fileTypes
@@ -131,7 +131,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         if (fullPath.notExists()) {
             Files.createDirectories(fullPath)
         }
-        val outName = if (fileType == FileType.REPOSITORY) "${fileName}Repository" else fileName
+        val outName = if (fileType == FileType.Repository) "${fileName}Repository" else fileName
         return fullPath.resolve("$outName.${options.language.suffix}")
     }
 
@@ -142,7 +142,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         val context = mapOf<String, Any>()
         val today = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now())!!
         val typeContext =
-            if (fileType == FileType.ENTITY) buildEntityContext(tabRef) else buildRepositoryContext(tabRef)
+            if (fileType == FileType.Entity) buildEntityContext(tabRef) else buildRepositoryContext(tabRef)
 
         return context
             .plus("author" to options.author)
@@ -160,7 +160,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
             val keyClassName = tabRef.columns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
             val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
             var superClass = "org.babyfish.jimmer.spring.repository."
-            superClass += if (options.language == Language.JAVA) "JRepository" else "KRepository"
+            superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
             val reposAnnot = "org.springframework.stereotype.Repository"
 
             return context

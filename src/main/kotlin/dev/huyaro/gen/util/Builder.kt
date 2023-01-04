@@ -16,7 +16,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-21
  * @description Function details...
  */
@@ -70,7 +70,7 @@ fun buildTable(
         val colType = it.dataType.typeName.let { name -> name.split(" ")[0] }
         val isPrimaryKey = DasUtil.isPrimary(it)
         val jvmType = typeService.getJvmType(colType)
-        val jvmTypeName = if (lang == Language.KOTLIN) jvmType.simpleName else {
+        val jvmTypeName = if (lang == Language.Kotlin) jvmType.simpleName else {
             if (isPrimaryKey) jvmType.javaPrimitiveType?.simpleName
             else jvmType.javaObjectType.simpleName
         }!!

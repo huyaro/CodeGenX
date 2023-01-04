@@ -3,7 +3,7 @@ package dev.huyaro.gen.meta
 /**
  * 表信息
  *
- * @author YangHu
+ * @author huyaro
  * @date 2022-10-10
  */
 data class Table (

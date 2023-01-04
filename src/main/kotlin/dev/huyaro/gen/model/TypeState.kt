@@ -7,7 +7,7 @@ import java.time.LocalTime
 import kotlin.reflect.KClass
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-15
  * @description build-in types
  */
@@ -36,7 +36,7 @@ class TypeState {
         buildInTypes
             .forEach { (jvmType, jdbcTypes) ->
                 jdbcTypes.forEach {
-                    mapping.putIfAbsent(it, TypePair(Tag.BUILD_IN, it, jvmType.javaObjectType.name))
+                    mapping.putIfAbsent(it, TypePair(Tag.INTERNAL, it, jvmType.javaObjectType.name))
                 }
             }
     }
@@ -60,4 +60,24 @@ class TypeState {
         mapping.remove(jdbcType.lowercase())
     }
 
+}
+
+/**
+ * table row data
+ */
+class TypePair() {
+    lateinit var tag: Tag
+    lateinit var jdbcType: String
+    lateinit var jvmType: String
+
+    constructor(tag: Tag, jdbcType: String, jvmType: String) : this() {
+        this.tag = tag
+        this.jdbcType = jdbcType
+        this.jvmType = jvmType
+    }
+
+    // Change string type to kotlin type
+    fun readJvmType(): KClass<*> {
+        return Class.forName(this.jvmType).kotlin
+    }
 }

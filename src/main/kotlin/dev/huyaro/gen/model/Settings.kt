@@ -2,12 +2,10 @@ package dev.huyaro.gen.model
 
 import com.intellij.database.psi.DbTable
 import com.intellij.openapi.module.Module
-import com.intellij.util.ui.ColumnInfo
 import org.jetbrains.annotations.ApiStatus
-import kotlin.reflect.KClass
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-14
  * @description generator source data
  */
@@ -27,16 +25,25 @@ data class GeneratorOptions(
     var author: String = System.getProperty("user.name"),
     var rootPackage: String = "",
     var outputDir: String = "",
-    var fileMode: FileMode = FileMode.SKIPPING,
+    var fileMode: FileMode = FileMode.Skipping,
     var superClass: String = "",
     var entityType: Boolean = true,
     var repositoryType: Boolean = true,
-    var language: Language = Language.JAVA,
-    var framework: Framework = Framework.JIMMER,
+    var language: Language = Language.Java,
+    var framework: Framework = Framework.Jimmer,
     var columnFilter: FilterRule = FilterRule(),
     var tableNaming: NamingRule = NamingRule(),
     var columnNaming: NamingRule = NamingRule(),
+    var strategy: StrategyOptions = StrategyOptions(),
     var logs: String = ""
+)
+
+@ApiStatus.Internal
+data class StrategyOptions(
+    var operator: Operator = Operator.Add,
+    var target: OptTarget = OptTarget.Table,
+    var position: OptPosition = OptPosition.Suffix,
+    var optValue: String = "",
 )
 
 /**
@@ -60,7 +67,7 @@ data class NamingRule(
  */
 @ApiStatus.Internal
 enum class FileMode {
-    OVERWRITE, SKIPPING
+    Overwrite, Skipping
 }
 
 /**
@@ -68,7 +75,7 @@ enum class FileMode {
  */
 @ApiStatus.Internal
 enum class FileType {
-    ENTITY, REPOSITORY
+    Entity, Repository
 }
 
 /**
@@ -76,7 +83,7 @@ enum class FileType {
  */
 @ApiStatus.Internal
 enum class Language(val suffix: String) {
-    JAVA("java"), KOTLIN("kt")
+    Java("java"), Kotlin("kt")
 }
 
 /**
@@ -84,56 +91,37 @@ enum class Language(val suffix: String) {
  */
 @ApiStatus.Internal
 enum class Framework {
-    JIMMER
+    Jimmer
+}
+
+// ==================For StrategyDialog==================
+/**
+ * 操作
+ */
+@ApiStatus.Internal
+enum class Operator {
+    Add, Remove
+}
+
+/**
+ * 操作目标
+ */
+@ApiStatus.Internal
+enum class OptTarget {
+    Table, Column
+}
+
+/**
+ * 操作位置
+ */
+@ApiStatus.Internal
+enum class OptPosition {
+    Suffix, Prefix
 }
 
 
 // ==================For TypesDialog==================
 
 enum class Tag {
-    BUILD_IN, CUSTOM
-}
-
-/**
- * 表格中的每行数据
- */
-class TypePair() {
-    lateinit var tag: Tag
-    lateinit var jdbcType: String
-    lateinit var jvmType: String
-
-    constructor(tag: Tag, jdbcType: String, jvmType: String) : this() {
-        this.tag = tag
-        this.jdbcType = jdbcType
-        this.jvmType = jvmType
-    }
-
-    // Change string type to kotlin type
-    fun readJvmType(): KClass<*> {
-        return Class.forName(this.jvmType).kotlin
-    }
-}
-
-/**
- * 对类型表格的渲染
- */
-class TableColumnInfo(name: String, private val editable: Boolean = false) :
-    ColumnInfo<TypePair, String>(name) {
-
-    override fun valueOf(item: TypePair): String {
-        return when {
-            name.equals("Tag") -> item.tag.name.lowercase()
-            name.equals("JdbcType") -> item.jdbcType
-            name.equals("JvmType") -> item.readJvmType().javaObjectType.name
-            else -> ""
-        }
-    }
-
-    override fun isCellEditable(item: TypePair?): Boolean {
-        return editable
-    }
-
-    override fun setValue(item: TypePair?, value: String?) {
-        super.setValue(item, value)
-    }
+    INTERNAL, CUSTOM
 }

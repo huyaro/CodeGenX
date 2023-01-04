@@ -1,7 +1,7 @@
 package dev.huyaro.gen.util
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-21
  * @description Function details...
  */

@@ -101,6 +101,10 @@ class GeneratorDialog constructor(
             }.layout(RowLayout.PARENT_GRID)
                 .rowComment("Select the output directory. e.g.: /Project/src/main/java")
 
+            panel {
+
+            }
+
             twoColumnsRow({
                 panel {
                     buttonsGroup {
@@ -112,8 +116,8 @@ class GeneratorDialog constructor(
                     }.bind(options::fileMode)
 
                     row("FileType: ") {
-                        chkEntity = checkBox(FileType.ENTITY.name).bindSelected(options::entityType)
-                        chkRepository = checkBox(FileType.REPOSITORY.name)
+                        chkEntity = checkBox(FileType.Entity.name).bindSelected(options::entityType)
+                        chkRepository = checkBox(FileType.Repository.name)
                             .bindSelected(options::repositoryType)
                             .enabledIf(chkEntity.selected)
                     }.rowComment("Entity type must be selected!")
@@ -138,7 +142,7 @@ class GeneratorDialog constructor(
                 }
             }).layout(RowLayout.INDEPENDENT)
 
-            collapsibleGroup("Filter Strategy") {
+            group("Filter Strategy") {
                 row {
                     checkBox("UseRegex").bindSelected(
                         { options.columnFilter.useRegex },
@@ -147,31 +151,31 @@ class GeneratorDialog constructor(
                     textField().label("[Columns] exclude: ")
                         .bindText({ options.columnFilter.exclude }, { options.columnFilter.exclude = it })
                         .horizontalAlign(HorizontalAlign.FILL)
-                }.rowComment("Use spaces to separate multiple items")
+                }.rowComment("Use commas to separate multiple items")
             }
 
-            collapsibleGroup("Naming Strategy") {
-                groupRowsRange("[Table] Remove Prefix Or Suffix") {
-                    row {
-                        txtPrefix = textField().label("Prefix: ")
-                            .bindText({ options.tableNaming.prefix }, { options.tableNaming.prefix = it })
-                        txtSuffix = textField().label("Suffix: ")
-                            .bindText({ options.tableNaming.suffix }, { options.tableNaming.suffix = it })
-                        button("Test It") {
-                            namingTest()
-                        }
-                    }.rowComment("Use spaces to separate multiple items")
-                }
-
-                groupRowsRange("[Column] Remove Prefix Or Suffix") {
-                    row {
-                        textField().label("Prefix: ")
-                            .bindText({ options.columnNaming.prefix }, { options.columnNaming.prefix = it })
-                        textField().label("Suffix: ")
-                            .bindText({ options.columnNaming.suffix }, { options.columnNaming.suffix = it })
-                    }.rowComment("Use spaces to separate multiple items")
-                }
-            }
+            // collapsibleGroup("Naming Strategy") {
+            //     groupRowsRange("[Table] Remove Prefix Or Suffix") {
+            //         row {
+            //             txtPrefix = textField().label("Prefix: ")
+            //                 .bindText({ options.tableNaming.prefix }, { options.tableNaming.prefix = it })
+            //             txtSuffix = textField().label("Suffix: ")
+            //                 .bindText({ options.tableNaming.suffix }, { options.tableNaming.suffix = it })
+            //             button("Test It") {
+            //                 namingTest()
+            //             }
+            //         }.rowComment("Use spaces to separate multiple items")
+            //     }
+            //
+            //     groupRowsRange("[Column] Remove Prefix Or Suffix") {
+            //         row {
+            //             textField().label("Prefix: ")
+            //                 .bindText({ options.columnNaming.prefix }, { options.columnNaming.prefix = it })
+            //             textField().label("Suffix: ")
+            //                 .bindText({ options.columnNaming.suffix }, { options.columnNaming.suffix = it })
+            //         }.rowComment("Use spaces to separate multiple items")
+            //     }
+            // }
 
             group("Logs") {
                 row {

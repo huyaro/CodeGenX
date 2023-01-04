@@ -8,17 +8,17 @@ import com.intellij.openapi.components.Storage
 import kotlin.reflect.KClass
 
 /**
- * @author yanghu
+ * @author huyaro
  * @date 2022-11-18
  * @description Storage current types mapping
  */
 @State(
-    name = "CodeGenX-Settings",
-    storages = [Storage(value = "codegenX-settings.xml", roamingType = RoamingType.DISABLED)]
+    name = "CodeGen-X-Settings",
+    storages = [Storage(value = "codegen-x-settings.xml", roamingType = RoamingType.DISABLED)]
 )
 class TypeRegistration : PersistentStateComponent<TypeState> {
 
-    private val defaultType = TypePair(Tag.BUILD_IN, "varchar", "java.lang.String")
+    private val defaultType = TypePair(Tag.INTERNAL, "varchar", "java.lang.String")
 
     /**
      * Must be public

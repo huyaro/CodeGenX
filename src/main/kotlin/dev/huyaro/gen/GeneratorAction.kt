@@ -20,8 +20,10 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.JBEmptyBorder
 import dev.huyaro.gen.model.DataModel
 import dev.huyaro.gen.model.GeneratorOptions
+import dev.huyaro.gen.model.StrategyOptions
 import dev.huyaro.gen.model.TypeRegistration
 import dev.huyaro.gen.ui.GeneratorDialog
+import dev.huyaro.gen.ui.StrategyDialog
 import dev.huyaro.gen.ui.TypesDialog
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.buildTable
@@ -139,6 +141,11 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
         }
         // generator dialog
         tabPanel.add("Generator", genScrollPanel)
+
+        // // strategy dialog
+        val strategy = StrategyOptions()
+        val stgPanel = StrategyDialog(strategy).initPanel()
+        tabPanel.add("Strategy", stgPanel)
 
         // type dialog
         val typesPanel = TypesDialog(project).initPanel()
