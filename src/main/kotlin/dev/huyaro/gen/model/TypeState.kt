@@ -49,8 +49,7 @@ class TypeState {
      * 添加jdbcType
      */
     fun addType(jvmType: String, jdbcType: String) {
-        val newPair = TypePair(Tag.CUSTOM, jdbcType, jvmType)
-        mapping.compute(jdbcType) { _, _ -> newPair }
+        mapping[jdbcType.lowercase()] = TypePair(Tag.CUSTOM, jdbcType, jvmType)
     }
 
     /**

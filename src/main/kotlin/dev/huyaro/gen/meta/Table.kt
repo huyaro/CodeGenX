@@ -33,8 +33,13 @@ data class Table (
     val refColumns: MutableList<String> = mutableListOf(),
 
     /**
+     * 待生成的字段
+     */
+    val columns: MutableList<Column> = mutableListOf(),
+
+    /**
      * 所有字段
      */
-    val columns: MutableList<Column> = mutableListOf()
+    val allColumns : MutableList<Column> = mutableListOf()
 )
 

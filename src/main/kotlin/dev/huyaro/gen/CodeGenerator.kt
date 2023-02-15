@@ -149,19 +149,21 @@ constructor(private val project: Project, private val options: GeneratorOptions,
      * 构建repository类型上下文. 忽略没有主键的Entity.
      */
     private fun buildRepositoryContext(tabRef: Table): Map<String, Any> {
-        val context = mapOf<String, Any>()
-        if (tabRef.keyColumns.size > 0) {
-            val keyClassName = tabRef.columns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
-            val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
-            var superClass = "org.babyfish.jimmer.spring.repository."
-            superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
-            val reposAnnot = "org.springframework.stereotype.Repository"
-
-            return context
-                .plus("entityKeyType" to keyClassName)
-                .plus("entityName" to tabRef.className)
-                .plus("imports" to listOf(entityCls, superClass, reposAnnot))
+        val context = mutableMapOf<String, Any>()
+        if (tabRef.keyColumns.size > 0 ) {
+            val keyClassName = tabRef.allColumns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
+            context["entityKeyType"] = keyClassName
+        } else {
+            throw IllegalStateException("[${tabRef.name}] primary key does not exist!\n")
         }
+
+        val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
+        var superClass = "org.babyfish.jimmer.spring.repository."
+        superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
+        val reposAnnot = "org.springframework.stereotype.Repository"
+        context["entityName"] = tabRef.className
+        context["imports"] = listOf(entityCls, superClass, reposAnnot)
+
         return context
     }
 

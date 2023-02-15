@@ -241,7 +241,7 @@ private class StrategyTableInfo(
             fillsViewportHeight = true
             rowHeight = 25
         }
-        // render columns with combobox or text
+        // render columns with comboBox or text
         renderColumns()
     }
 
@@ -263,7 +263,7 @@ private class StrategyTableInfo(
     }
 
     /**
-     * render columns with combobox or text
+     * render columns with comboBox or text
      */
     private fun renderColumns() {
         optItems.map { entry ->
@@ -271,7 +271,7 @@ private class StrategyTableInfo(
             val column = table.columnModel.getColumn(entry.key)
             column.cellEditor = DefaultCellEditor(comboBox)
 
-            // Add combobox changed listener
+            // Add comboBox changed listener
             comboBox.addItemListener {
                 if (it.stateChange == ItemEvent.SELECTED) {
                     val item = tableModel.getItem(table.selectedRow)

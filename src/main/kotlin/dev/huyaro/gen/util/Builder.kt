@@ -17,7 +17,7 @@ import java.nio.file.Paths
 /**
  * @author huyaro
  * @date 2022-11-21
- * @description Function details...
+ * @description Build TableModel for Das
  */
 
 /**
@@ -52,14 +52,7 @@ fun buildTable(
     val table = Table(name = dbTable.name, comment = dbTable.comment)
 
     val excludeCols = trimAndSplit(excludeValue)
-    // filter columns and build table data
-    var columns = DasUtil.getColumns(dbTable).toList()
-    if (excludeCols.isNotEmpty()) {
-        val match: (String, String) -> Boolean = { s1, s2 -> Regex(s1).matches(s2) }
-        excludeCols.forEach {
-            columns = columns.filter { col -> !match(it, col.name) }.toList()
-        }
-    }
+    val columns = DasUtil.getColumns(dbTable).toList()
 
     columns.forEach {
         val colName = it.name
@@ -83,15 +76,20 @@ fun buildTable(
             nullable = !it.isNotNull,
             defaultValue = it.default,
             comment = it.comment,
-            uniqKey = indices.filter { idx ->
+            uniqueKey = indices.filter { idx ->
                 !isPrimaryKey && idx.isUnique && DasUtil.containsName(colName, idx.columnsRef)
             }.size() > 0
         )
         when {
             column.primaryKey -> table.keyColumns.add(column.name)
-            column.uniqKey -> table.refColumns.add(column.name)
+            column.uniqueKey -> table.refColumns.add(column.name)
         }
-        table.columns.add(column)
+        // add all columns
+        table.allColumns.add(column)
+        // Add valid fields after exclusion
+        if (excludeCols.isEmpty() || excludeCols.all { re -> !Regex(re).matches(colName) }) {
+            table.columns.add(column)
+        }
     }
     return table
 }

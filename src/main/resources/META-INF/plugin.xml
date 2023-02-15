@@ -21,6 +21,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.1</h4>
+        <ul>
+          <li>Fix the error generated after the primary key is excluded</li>
+        </ul>
         <h4>0.1.0</h4>
         <ul>
           <li>Add function description, adjust display format</li>

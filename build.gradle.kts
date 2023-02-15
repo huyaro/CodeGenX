@@ -1,11 +1,11 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.7.20"
-    id("org.jetbrains.intellij") version "1.10.0"
+    id("org.jetbrains.intellij") version "1.13.0"
 }
 
 group = "dev.huyaro.gen"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     mavenCentral()

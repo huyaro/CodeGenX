@@ -27,7 +27,7 @@ data class Column(
     /**
      * 包含在唯一索引中
      */
-    var uniqKey: Boolean = false,
+    var uniqueKey: Boolean = false,
 
     /**
      * 字段类型的字符串原值
