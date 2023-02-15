@@ -25,16 +25,22 @@ import java.nio.file.Paths
  */
 fun buildOptions(module: Module): GeneratorOptions {
     val username = System.getProperty("user.name")
-    val sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(JavaSourceRootType.SOURCE)
+    val sourceRoot = ModuleRootManager.getInstance(module)
+        .getSourceRoots(JavaSourceRootType.SOURCE)
+        .first { vf -> vf.path.contains("src/main") }
 
+    var pkgRoot = ""
     // guess root package
-    val sourceRootDir = Paths.get(sourceRoots[0].path)
-    val pkgRootDir = Files.walk(sourceRootDir, 5).filter { it.isDirectory() && Files.list(it).count() > 1 }
-        .min { p1, p2 -> p1.toString().length - p2.toString().length }.get()
-    val pkgRoot = sourceRootDir.relativize(pkgRootDir).joinToString(separator = ".")
+    val sourceRootDir = Paths.get(sourceRoot.path)
+    Files.walk(sourceRootDir, 5)
+        .filter { it.isDirectory() && it != sourceRootDir && Files.list(it).count() > 1 }
+        .findFirst()
+        .ifPresent { p ->
+            pkgRoot = sourceRootDir.relativize(p).joinToString(separator = ".")
+        }
 
     return GeneratorOptions(
-        activeModule = module, author = username, rootPackage = pkgRoot, outputDir = sourceRoots[0].path
+        activeModule = module, author = username, rootPackage = pkgRoot, outputDir = sourceRoot.path
     )
 }
 
