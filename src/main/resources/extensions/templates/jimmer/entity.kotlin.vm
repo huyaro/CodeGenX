@@ -7,11 +7,15 @@ import org.babyfish.jimmer.sql.*
 
 
 /**
-* #if("$!{table.getComment()}" != "") ${table.getComment()} #else ${table.getName()} #end
-*
-* @author ${author}
-* @date ${date}
-*/
+ * <p>
+ * #if("$!{table.getComment()}" != "") ${table.getComment()}
+#else ${table.getName()}
+#end
+ * </p>
+ *
+ * @author ${author}
+ * @date ${date}
+ */
 @Entity
 @Table(name = "${table.getName()}")
 public interface ${table.getClassName()} #if("$!{superClass}" != "") :${superClass} #end{
@@ -29,7 +33,8 @@ public interface ${table.getClassName()} #if("$!{superClass}" != "") :${superCla
     #end
     #elseif($table.getRefColumns().contains($field.getName()))
     @Key
-    #elseif(${field.getName()} != ${field.getPropName()})
+    #end
+    #if(${field.getName()} != ${field.getPropName()})
     @Column(name = "${field.getName()}")
     #end
     val ${field.getPropName()}: ${field.getJvmTypeName()}#if(${field.getNullable()})? #end
