@@ -21,6 +21,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.2</h4>
+        <ul>
+          <li>Fix that some fields have not added column annotation after applying the column name change rule</li>
+        </ul>
         <h4>0.1.1</h4>
         <ul>
           <li>Fix the error generated after the primary key is excluded</li>
