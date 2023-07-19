@@ -52,6 +52,7 @@ class GeneratorDialog constructor(
     private lateinit var txtLog: Cell<JBTextArea>
     private lateinit var chkEntity: Cell<JBCheckBox>
     private lateinit var chkRepository: Cell<JBCheckBox>
+    private lateinit var chkInput: Cell<JBCheckBox>
 
     lateinit var logger: LoggerComponent
     lateinit var optionPanel: DialogPanel
@@ -153,9 +154,13 @@ class GeneratorDialog constructor(
                     }.bind(options::fileMode)
 
                     row("FileType: ") {
-                        chkEntity = checkBox(FileType.Entity.name).bindSelected(options::entityType)
+                        chkEntity = checkBox(FileType.Entity.name)
+                            .bindSelected(options::entityType)
                         chkRepository = checkBox(FileType.Repository.name)
                             .bindSelected(options::repositoryType)
+                            .enabledIf(chkEntity.selected)
+                        chkInput = checkBox(FileType.Input.name)
+                            .bindSelected(options::inputType)
                             .enabledIf(chkEntity.selected)
                     }.rowComment("Entity type must be selected!")
                 }
@@ -314,11 +319,11 @@ private class StrategyTableInfo(
 private class StrategyTableColumnInfo(name: String) : ColumnInfo<StrategyRule, String>(name) {
 
     override fun valueOf(item: StrategyRule): String {
-        return when {
-            name.equals("Operator") -> item.operator
-            name.equals("Target") -> item.target
-            name.equals("Position") -> item.position
-            name.equals("Value") -> item.optValue
+        return when(name) {
+            "Operator" -> item.operator
+            "Target" -> item.target
+            "Position" -> item.position
+            "Value" -> item.optValue
             else -> ""
         }
     }

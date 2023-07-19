@@ -48,7 +48,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
 
         val outFiles = mutableListOf<Path>()
         this.tables = applyNaming(tables)
-        val fileTypes = relateFileType(options.entityType, options.repositoryType)
+        val fileTypes = relateFileType(options.entityType, options.repositoryType, options.inputType)
         fileTypes.forEach {
             val templateFile = getTemplate(resource, it).apply {
                 if (notExists()) {
@@ -96,12 +96,15 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     /**
      * 处理选中的文件类型. 当entity未选中时, repository不生效
      */
-    private fun relateFileType(entity: Boolean, repository: Boolean): Set<FileType> {
+    private fun relateFileType(entity: Boolean, repository: Boolean, inputType: Boolean): Set<FileType> {
         val fileTypes = mutableSetOf<FileType>()
         if (entity) {
             fileTypes.add(FileType.Entity)
             if (repository) {
                 fileTypes.add(FileType.Repository)
+            }
+            if (inputType) {
+                fileTypes.add(FileType.Input)
             }
         }
         return fileTypes
@@ -125,7 +128,11 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         if (fullPath.notExists()) {
             Files.createDirectories(fullPath)
         }
-        val outName = if (fileType == FileType.Repository) "${fileName}Repository" else fileName
+        val outName = when (fileType) {
+            FileType.Repository -> "${fileName}Repository"
+            FileType.Input -> "${fileName}Input"
+            FileType.Entity -> fileName
+        }
         return fullPath.resolve("$outName.${options.language.suffix}")
     }
 
@@ -135,8 +142,10 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     private fun buildContext(fileType: FileType, tabRef: Table): Map<String, Any> {
         val context = mapOf<String, Any>()
         val today = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now())!!
-        val typeContext =
-            if (fileType == FileType.Entity) buildEntityContext(tabRef) else buildRepositoryContext(tabRef)
+        val typeContext = when (fileType) {
+            FileType.Repository -> buildRepositoryContext(tabRef)
+            else -> buildEntityContext(tabRef, fileType)
+        }
 
         return context
             .plus("author" to options.author)
@@ -150,12 +159,12 @@ constructor(private val project: Project, private val options: GeneratorOptions,
      */
     private fun buildRepositoryContext(tabRef: Table): Map<String, Any> {
         val context = mutableMapOf<String, Any>()
-        if (tabRef.keyColumns.size > 0 ) {
-            val keyClassName = tabRef.allColumns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
-            context["entityKeyType"] = keyClassName
-        } else {
+        if (tabRef.keyColumns.isEmpty()) {
             throw IllegalStateException("[${tabRef.name}] primary key does not exist!\n")
         }
+
+        val keyClassName = tabRef.allColumns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
+        context["entityKeyType"] = keyClassName
 
         val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
         var superClass = "org.babyfish.jimmer.spring.repository."
@@ -168,9 +177,9 @@ constructor(private val project: Project, private val options: GeneratorOptions,
     }
 
     /**
-     * 构建entity类型上下文
+     * 构建entity与input类型上下文
      */
-    private fun buildEntityContext(tabRef: Table): Map<String, Any> {
+    private fun buildEntityContext(tabRef: Table, fileType: FileType): Map<String, Any> {
         val context = mapOf<String, Any>()
         var imports = tabRef.columns
             .map { it.jvmType.javaObjectType.name }
@@ -178,6 +187,11 @@ constructor(private val project: Project, private val options: GeneratorOptions,
             .toSet()
         if (options.superClass.isNotBlank()) {
             imports = imports.plus(options.superClass)
+        }
+        if (fileType == FileType.Input && options.inputType) {
+            val pkgPath = options.rootPackage
+            val pkgName = fileTypeMapping[FileType.Entity]
+            imports = imports.plus("${pkgPath}.${pkgName}.${tabRef.className}")
         }
         return context
             .plus("imports" to imports)

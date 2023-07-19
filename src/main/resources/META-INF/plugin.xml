@@ -18,9 +18,14 @@
     Features:
     <ul>
       <li>Generate some codes from database tables</li>
+      <li>Support mapping database tables to the Jimmer framework</li>
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+       <h4>0.1.3</h4>
+        <ul>
+          <li>Add support for inputDTO generation **(Depends on MapStruct, Lombok)**</li>
+        </ul>
         <h4>0.1.2</h4>
         <ul>
           <li>Fix that some fields have not added column annotation after applying the column name change rule</li>

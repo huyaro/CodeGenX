@@ -1,0 +1,45 @@
+package ${fullPackage}
+
+#foreach($pkg in ${imports})
+import ${pkg}
+#end
+import org.mapstruct.ReportingPolicy
+import org.mapstruct.factory.Mappers
+import org.mapstruct.BeanMapping
+import org.babyfish.jimmer.Input
+import org.mapstruct.Mapper
+
+
+/**
+* <p>
+    * ${table.getClassName()}Input
+    * </p>
+*
+* @author ${author}
+* @date ${date}
+*/
+data class ${table.getClassName()}Input(
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.getColumns()})
+/**
+* #if("$!{field.getComment()}" != "") ${field.getComment()} #else ${field.getName()}  #end
+*/
+val ${field.getPropName()}: ${field.getJvmTypeName()} #if(${field.getNullable()})? #end ,
+
+#end
+## ----------  END 普通字段循环遍历  ----------
+): Input<${table.getClassName()}> {
+
+override fun toEntity(): ${table.getClassName()} = CONVERTER.to${table.getClassName()}(this)
+
+@Mapper
+internal interface Converter {
+@BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
+fun to${table.getClassName()}(input: ${table.getClassName()}Input): ${table.getClassName()}
+}
+
+companion object {
+@JvmStatic
+private val CONVERTER = Mappers.getMapper(Converter::class.java)
+}
+}
