@@ -92,6 +92,7 @@ fun buildTable(
         }
         // add all columns
         table.allColumns.add(column)
+
         // Add valid fields after exclusion
         if (excludeCols.isEmpty() || excludeCols.all { re -> !Regex(re).matches(colName) }) {
             table.columns.add(column)

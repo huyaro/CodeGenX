@@ -1,6 +1,7 @@
 package dev.huyaro.gen.ui
 
 import com.intellij.database.psi.DbTable
+import com.intellij.database.util.or
 import com.intellij.database.view.actions.font
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
@@ -26,6 +27,7 @@ import dev.huyaro.gen.model.*
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.isNamingNormal
 import dev.huyaro.gen.util.naming
+import dev.huyaro.gen.util.toUnderline
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.event.ItemEvent
@@ -53,6 +55,7 @@ class GeneratorDialog constructor(
     private lateinit var chkEntity: Cell<JBCheckBox>
     private lateinit var chkRepository: Cell<JBCheckBox>
     private lateinit var chkInput: Cell<JBCheckBox>
+    private lateinit var txtExcludeCols: Cell<JBTextField>
 
     lateinit var logger: LoggerComponent
     lateinit var optionPanel: DialogPanel
@@ -120,15 +123,30 @@ class GeneratorDialog constructor(
                 val superCls = textField()
                     .label("SuperClass: ")
                     .bindText(options::superClass)
+                    .enabled(false)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                     .comment("Select the superclass of entity. e.g.: com.hello.entity.BaseEntity")
+
                 button("Choose...") {
                     val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass...", project)
                     classChooserDialog.show()
                     val selected = classChooserDialog.selected
                     if (selected != null) {
-                        selected.qualifiedName?.let { pkg -> superCls.text(pkg) }
+                        selected.qualifiedName?.let { superCls.text(it) }
+                        txtExcludeCols.text("")
+                        options.excludeCols = ""
+                        // 反射获取superclass的已定义字段放入到excludeColumns中
+                        if (selected.isInterface) {
+                            val joinCols = selected.methods.joinToString(", ") { method ->
+                                method.getAnnotation("org.babyfish.jimmer.sql.Column")?.let { an ->
+                                    an.findAttributeValue("name")
+                                        ?.text?.replace("\"", "")
+                                }.or(toUnderline(method.name))
+                            }
+                            txtExcludeCols.text(joinCols)
+                            options.excludeCols = joinCols
+                        }
                     }
                 }
             }.layout(RowLayout.PARENT_GRID)
@@ -185,7 +203,8 @@ class GeneratorDialog constructor(
             }).layout(RowLayout.INDEPENDENT)
 
             row {
-                textField().label("Exclude columns: ")
+                txtExcludeCols = textField()
+                    .label("Exclude columns: ")
                     .bindText(options::excludeCols)
                     .horizontalAlign(HorizontalAlign.FILL)
             }.rowComment("Use commas to separate multiple items")
@@ -259,7 +278,7 @@ private class StrategyTableInfo(
         // add "test" tool button
         val testButtonAction = TestButtonAction(tableList, tableModel, logger)
         // Disable when there is no data in the table
-        testButtonAction.addCustomUpdater { tableModel.items.size > 0 }
+        testButtonAction.addCustomUpdater { tableModel.items.isNotEmpty() }
         decorator.addExtraAction(testButtonAction)
         // override "add" event
         decorator.setAddAction { _ -> addDefaultRow() }
@@ -319,7 +338,7 @@ private class StrategyTableInfo(
 private class StrategyTableColumnInfo(name: String) : ColumnInfo<StrategyRule, String>(name) {
 
     override fun valueOf(item: StrategyRule): String {
-        return when(name) {
+        return when (name) {
             "Operator" -> item.operator
             "Target" -> item.target
             "Position" -> item.position

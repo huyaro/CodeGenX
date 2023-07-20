@@ -22,6 +22,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.4</h4>
+        <ul>
+          <li>Support to automatically get excluded columns from superclass</li>
+        </ul>
        <h4>0.1.3</h4>
         <ul>
           <li>Add support for inputDTO generation **(Depends on MapStruct, Lombok)**</li>

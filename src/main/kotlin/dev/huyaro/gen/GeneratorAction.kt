@@ -25,7 +25,7 @@ import dev.huyaro.gen.ui.GeneratorDialog
 import dev.huyaro.gen.ui.TypesDialog
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.buildTable
-import dev.huyaro.gen.util.camelCase
+import dev.huyaro.gen.util.toCamelCase
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import java.awt.Dimension
 import javax.swing.JComponent
@@ -113,24 +113,29 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                 button("Generate") {
                     genDialog.optionPanel.apply()
                     // validate
-                    if (options.author.isEmpty()) {
-                        Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
-                    } else if (options.rootPackage.isEmpty()) {
-                        Messages.showMessageDialog("Package Can't be empty!", "Warning", null)
-                    } else if (!options.entityType) {
-                        Messages.showMessageDialog("FileType Can't be empty!", "Warning", null)
-                    } else {
-                        // fetch table data
-                        val tableList = dataModel.tables.map {
-                            buildTable(typeService, it, options.excludeCols, options.language)
+                    when {
+                        options.author.isEmpty() -> {
+                            Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
                         }
-                        try {
-                            val outLogs = CodeGenerator(project, options, tableList).generate()
-                            genDialog.logger.flush(outLogs)
-                            notify("Generate code succeed!")
-                        } catch (e: RuntimeException) {
-                            log.error("Generate Error: ${e.message}")
-                            notify("Generate code failed! ${e.message}", NotificationType.ERROR)
+                        options.rootPackage.isEmpty() -> {
+                            Messages.showMessageDialog("Package Can't be empty!", "Warning", null)
+                        }
+                        !options.entityType -> {
+                            Messages.showMessageDialog("FileType Can't be empty!", "Warning", null)
+                        }
+                        else -> {
+                            // fetch table data
+                            val tableList = dataModel.tables.map {
+                                buildTable(typeService, it, options.excludeCols, options.language)
+                            }
+                            try {
+                                val outLogs = CodeGenerator(project, options, tableList).generate()
+                                genDialog.logger.flush(outLogs)
+                                notify("Generate code succeed!")
+                            } catch (e: RuntimeException) {
+                                log.error("Generate Error: ${e.message}")
+                                notify("Generate code failed! ${e.message}", NotificationType.ERROR)
+                            }
                         }
                     }
                 }
@@ -163,7 +168,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     private fun initLogs(genOpts: GeneratorOptions, tables: List<DbTable>): GeneratorOptions {
         val maxLen = tables.maxOf { it.name.length }
         val logs = tables.joinToString(separator = "\n") {
-            "[${it.name.padEnd(maxLen)}]  ==>  [${camelCase(it.name, true)}]"
+            "[${it.name.padEnd(maxLen)}]  ==>  [${toCamelCase(it.name, true)}]"
         }
 
         genOpts.logs += "============================Mapping [Table] And [Class]============================\n"

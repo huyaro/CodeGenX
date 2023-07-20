@@ -4,6 +4,7 @@ import dev.huyaro.gen.model.Operator
 import dev.huyaro.gen.model.OptPosition
 import dev.huyaro.gen.model.OptTarget
 import dev.huyaro.gen.model.StrategyRule
+import java.util.*
 
 /**
  * @author huyaro
@@ -13,7 +14,7 @@ import dev.huyaro.gen.model.StrategyRule
 /**
  * underline to camelcase
  */
-fun camelCase(str: String, firstUpper: Boolean = false, delimiter: String = "_"): String {
+fun toCamelCase(str: String, firstUpper: Boolean = false, delimiter: String = "_"): String {
     var nextToUpper = false
     val builder = StringBuilder()
     for (i in str.indices) {
@@ -33,6 +34,26 @@ fun camelCase(str: String, firstUpper: Boolean = false, delimiter: String = "_")
 }
 
 /**
+ * camelcase to underline
+ */
+fun toUnderline(str: String): String {
+    val trimStr = str.trim()
+    if (trimStr.isEmpty()) return ""
+    val strList = mutableListOf<String>()
+    var i = 1
+    var j = 0
+    while (i < trimStr.length) {
+        if (trimStr[i] in 'A'..'Z') {
+            strList.add(trimStr.substring(j, i))
+            j = i
+        }
+        i++
+    }
+    strList.add(trimStr.substring(j))
+    return strList.joinToString("_") { it.lowercase(Locale.getDefault()) }
+}
+
+/**
  * trim all space and split
  */
 fun trimAndSplit(value: String): List<String> {
@@ -40,11 +61,7 @@ fun trimAndSplit(value: String): List<String> {
     if (value.isEmpty() || value.isBlank()) {
         return valueList
     }
-    val splitArray = Regex("\\s+").replace(value, " ").split(",")
-    if (splitArray.size == 1 && splitArray[0].isBlank()) {
-        return valueList
-    }
-    return splitArray
+    return value.replace("\\s".toRegex(), "").split(",")
 }
 
 /**
@@ -67,7 +84,7 @@ fun naming(name: String, rules: List<StrategyRule>, target: OptTarget = OptTarge
         if (isPrefix) "${value}_$source" else "${source}_$value"
     }
     val namingByTarget: (String) -> String = { source: String ->
-        if (target == OptTarget.Table) camelCase(source, true) else camelCase(source)
+        if (target == OptTarget.Table) toCamelCase(source, true) else toCamelCase(source)
     }
 
     val filterRules = rules.filter { it.optValue.isNotBlank() && (it.target == target.name) }

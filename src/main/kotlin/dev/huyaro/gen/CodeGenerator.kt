@@ -7,7 +7,6 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiManager
-import com.intellij.util.io.exists
 import dev.huyaro.gen.meta.Table
 import dev.huyaro.gen.model.*
 import dev.huyaro.gen.util.VelocityTemplate
@@ -18,6 +17,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
@@ -41,7 +41,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
         val extensionsRootType = ExtensionsRootType.getInstance()
         val resource = extensionsRootType.findResourceDirectory(PluginId.findId(pluginId)!!, templatePath, false)
         val outLogs = StringBuilder()
-        if (!resource.exists()) {
+        if (resource.notExists()) {
             outLogs.append("Resource director [${resource}] not exists!\n")
             return outLogs.toString()
         }
