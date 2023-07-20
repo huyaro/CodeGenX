@@ -1,11 +1,14 @@
 CodeGenX
 ---
-> Code generation plug-in based on database table
+> An IDEA plugin for code model generation of database tables
 
-#### Support Features
-- generate code for entity and repository
-- support framework: jimmer
-- support language: java, kotlin
+#### Features
+- Generate code types: Entity, Repository, Input
+- Support framework: [*Jimmer*](https://github.com/babyfish-ct/jimmer)
+- Support languages: Java, Kotlin
+
+#### Usage
+![Usage](screenshot/usage.png)
 
 #### Screenshot
 - Generator
@@ -16,3 +19,5 @@ CodeGenX
 
 - IDEA Plugin
 ![IDEA plugin](screenshot/plugin.png)
+
+
