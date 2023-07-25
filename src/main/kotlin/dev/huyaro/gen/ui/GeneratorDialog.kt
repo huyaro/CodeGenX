@@ -1,7 +1,6 @@
 package dev.huyaro.gen.ui
 
 import com.intellij.database.psi.DbTable
-import com.intellij.database.util.or
 import com.intellij.database.view.actions.font
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
@@ -43,14 +42,14 @@ import javax.swing.ListSelectionModel
  * @author huyaro
  * @date 2022-11-06
  */
-class GeneratorDialog constructor(
+class GeneratorDialog(
     private val project: Project?,
     private val options: GeneratorOptions,
     private val data: DataModel
 ) {
 
     private lateinit var outDir: Cell<TextFieldWithBrowseButton>
-    private lateinit var textPkg: Cell<JBTextField>
+    private lateinit var txtPkg: Cell<JBTextField>
     private lateinit var txtLog: Cell<JBTextArea>
     private lateinit var chkEntity: Cell<JBCheckBox>
     private lateinit var chkRepository: Cell<JBCheckBox>
@@ -98,10 +97,10 @@ class GeneratorDialog constructor(
                     val selectedIndex = (it.source as ComboBox<*>).selectedIndex
                     val curOpts = buildOptions(data.modules[selectedIndex])
                     outDir.text(curOpts.outputDir)
-                    textPkg.text(curOpts.rootPackage)
+                    txtPkg.text(curOpts.rootPackage)
                 }
 
-                textPkg = textField().label("Package: ")
+                txtPkg = textField().label("Package: ")
                     .bindText(options::rootPackage)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
@@ -111,7 +110,7 @@ class GeneratorDialog constructor(
                     chooserDialog.show()
                     val psiPackage = chooserDialog.selectedPackage
                     if (psiPackage != null) {
-                        textPkg.text(psiPackage.qualifiedName)
+                        txtPkg.text(psiPackage.qualifiedName)
                     }
                 }
             }.layout(RowLayout.PARENT_GRID)
@@ -131,21 +130,21 @@ class GeneratorDialog constructor(
                 button("Choose...") {
                     val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass...", project)
                     classChooserDialog.show()
-                    val selected = classChooserDialog.selected
-                    if (selected != null) {
-                        selected.qualifiedName?.let { superCls.text(it) }
+                    val selectedCls = classChooserDialog.selected
+                    if (selectedCls != null) {
+                        selectedCls.qualifiedName?.let { superCls.text(it) }
                         txtExcludeCols.text("")
                         options.excludeCols = ""
                         // 反射获取superclass的已定义字段放入到excludeColumns中
-                        if (selected.isInterface) {
-                            val joinCols = selected.methods.joinToString(", ") { method ->
-                                method.getAnnotation("org.babyfish.jimmer.sql.Column")?.let { an ->
-                                    an.findAttributeValue("name")
-                                        ?.text?.replace("\"", "")
-                                }.or(toUnderline(method.name))
+                        if (selectedCls.isInterface) {
+                            val joinColumns = selectedCls.methods.joinToString(", ") { method ->
+                                method.annotations
+                                    .firstOrNull { it.qualifiedName == "org.babyfish.jimmer.sql.Column" }
+                                    ?.let { it.findAttributeValue("name")?.text?.replace("\"", "") }
+                                    ?: toUnderline(method.name)
                             }
-                            txtExcludeCols.text(joinCols)
-                            options.excludeCols = joinCols
+                            txtExcludeCols.text(joinColumns)
+                            options.excludeCols = joinColumns
                         }
                     }
                 }

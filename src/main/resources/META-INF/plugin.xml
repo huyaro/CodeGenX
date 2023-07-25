@@ -22,7 +22,7 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
-        <h4>0.1.4</h4>
+        <h4>0.1.5</h4>
         <ul>
           <li>Support to automatically get excluded columns from superclass</li>
         </ul>
