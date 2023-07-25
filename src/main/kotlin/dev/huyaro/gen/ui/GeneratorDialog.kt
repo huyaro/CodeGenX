@@ -141,7 +141,7 @@ class GeneratorDialog(
                                 method.annotations
                                     .firstOrNull { it.qualifiedName == "org.babyfish.jimmer.sql.Column" }
                                     ?.let { it.findAttributeValue("name")?.text?.replace("\"", "") }
-                                    ?: toUnderline(method.name)
+                                    ?: toUnderline(method.name).replace("^get_(.*)".toRegex(), "$1")
                             }
                             txtExcludeCols.text(joinColumns)
                             options.excludeCols = joinColumns
