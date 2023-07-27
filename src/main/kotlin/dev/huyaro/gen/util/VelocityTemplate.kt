@@ -36,7 +36,7 @@ class VelocityTemplate {
     /**
      * render template file to outFile with context
      */
-    public fun render(outFile: Path, templateFile: Path, context: Map<String, Any>) {
+    fun render(outFile: Path, templateFile: Path, context: Map<String, Any>) {
         // set template resource import path
         properties.setProperty(
             RuntimeConstants.FILE_RESOURCE_LOADER_PATH,

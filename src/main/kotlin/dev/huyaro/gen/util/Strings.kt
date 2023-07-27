@@ -72,38 +72,52 @@ fun isNamingNormal(name: String): Boolean {
     return Regex(rule).matches(name)
 }
 
+
 /**
- * Apply Rules Rename
+ * remove prefix or suffix
+ */
+val removeFun: (String, String, Boolean) -> String = { source, value, isPrefix ->
+    if (isPrefix) source.removePrefix(value) else source.removeSuffix(value)
+}
+
+/**
+ * add prefix or suffix
+ */
+val addFun: (String, String, Boolean) -> String = { source, value, isPrefix ->
+    if (isPrefix) "${value}_$source" else "${source}_$value"
+}
+
+/**
+ * naming by target
+ */
+val namingByTarget: (String, OptTarget) -> String = { source, target ->
+    if (target == OptTarget.Table) toCamelCase(source, true) else toCamelCase(source)
+}
+
+/**
+ * apply rule list
+ */
+val applyRule: (String, StrategyRule) -> String = { source, rule ->
+    if (rule.position == OptPosition.Prefix.name) {
+        if (rule.operator == Operator.Add.name)
+            addFun(source, rule.optValue, true)
+        else removeFun(source, rule.optValue, true)
+    } else {
+        if (rule.operator == Operator.Add.name)
+            addFun(source, rule.optValue, false)
+        else removeFun(source, rule.optValue, false)
+    }
+}
+
+/**
+ * Apply Rules to Rename table or column
  */
 fun naming(name: String, rules: List<StrategyRule>, target: OptTarget = OptTarget.Table): String {
+    var dstName = name
+    rules
+        .filter { it.optValue.isNotBlank() && (it.target == target.name) }
+        .takeIf { it.isNotEmpty() }
+        ?.let { it.forEach { rule -> run { dstName = applyRule(dstName, rule) } } }
 
-    val removeFun: (String, String, Boolean) -> String = { source: String, value: String, isPrefix: Boolean ->
-        if (isPrefix) source.removePrefix(value) else source.removeSuffix(value)
-    }
-    val addFun: (String, String, Boolean) -> String = { source: String, value: String, isPrefix: Boolean ->
-        if (isPrefix) "${value}_$source" else "${source}_$value"
-    }
-    val namingByTarget: (String) -> String = { source: String ->
-        if (target == OptTarget.Table) toCamelCase(source, true) else toCamelCase(source)
-    }
-
-    val filterRules = rules.filter { it.optValue.isNotBlank() && (it.target == target.name) }
-    if (filterRules.isEmpty()) {
-        return namingByTarget(name)
-    }
-
-    var tabName = name
-    filterRules
-        .map { rule ->
-            tabName = if (rule.position == OptPosition.Prefix.name) {
-                if (rule.operator == Operator.Add.name)
-                    addFun(tabName, rule.optValue, true)
-                else removeFun(tabName, rule.optValue, true)
-            } else {
-                if (rule.operator == Operator.Add.name)
-                    addFun(tabName, rule.optValue, false)
-                else removeFun(tabName, rule.optValue, false)
-            }
-        }
-    return namingByTarget(tabName)
+    return namingByTarget(dstName, target)
 }
