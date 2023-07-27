@@ -1,6 +1,5 @@
 package dev.huyaro.gen.util
 
-import com.intellij.openapi.diagnostic.Logger
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
@@ -19,8 +18,6 @@ import kotlin.io.path.notExists
  * @description Velocity Template Engine
  */
 class VelocityTemplate {
-
-    private val log = Logger.getInstance(VelocityTemplate::class.java)
 
     private lateinit var engine: VelocityEngine
     private var properties = Properties()
@@ -43,10 +40,10 @@ class VelocityTemplate {
             templateFile.parent.absolutePathString()
         )
         engine = VelocityEngine(properties)
-        val outDir = outFile.parent
-        if (outDir.notExists()) {
-            Files.createDirectories(outDir)
-        }
+
+        outFile.parent
+            .takeIf { it.notExists() }
+            ?.let { Files.createDirectories(it) }
 
         Files.newBufferedWriter(
             outFile,
