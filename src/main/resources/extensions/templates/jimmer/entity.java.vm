@@ -37,6 +37,9 @@ public interface ${table.getClassName()} #if("$!{superClass}" != "") extends ${s
     #if(${field.getName()} != ${field.getPropName()})
     @Column(name = "${field.getName()}")
     #end
+    #if(${field.getNullable()})
+    @Nullable
+    #end
     ${field.getJvmTypeName()} ${field.getPropName()}();
 
 #end

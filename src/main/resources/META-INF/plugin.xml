@@ -22,6 +22,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.6</h4>
+        <ul>
+          <li>Support @Nullable(org.jetbrains.annotations) in entity</li>
+        </ul>
         <h4>0.1.5</h4>
         <ul>
           <li>Support to automatically get excluded columns from superclass</li>

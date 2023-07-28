@@ -26,8 +26,11 @@ import kotlin.io.path.notExists
  * @date 2022-11-15
  * @description generate code with config
  */
-class CodeGenerator
-constructor(private val project: Project, private val options: GeneratorOptions, private var tables: List<Table>) {
+class CodeGenerator(
+    private val project: Project,
+    private val options: GeneratorOptions,
+    private var tables: List<Table>
+) {
 
     private val log = Logger.getInstance(CodeGenerator::class.java)
 
@@ -81,7 +84,7 @@ constructor(private val project: Project, private val options: GeneratorOptions,
                         outFiles.add(fl)
 
                         line = "Generated File => [${fl}]\n"
-                        log.warn(line)
+                        log.info(line)
                         outLogs.append(line)
                     }
                 }
@@ -114,7 +117,8 @@ constructor(private val project: Project, private val options: GeneratorOptions,
      * 获取模板文件
      */
     private fun getTemplate(resource: Path, fileType: FileType): Path {
-        return resource.resolve(options.framework.name.lowercase())
+        return resource
+            .resolve(options.framework.name.lowercase())
             .resolve("${fileType.name.lowercase()}.${options.language.name.lowercase()}.vm")
     }
 
@@ -123,11 +127,10 @@ constructor(private val project: Project, private val options: GeneratorOptions,
      */
     private fun getTargetFile(fileType: FileType, fileName: String): Path {
         val pkgPath = options.rootPackage.replace(".", File.separator)
-        val pkgName = fileTypeMapping[fileType]!!
+        val pkgName = fileTypeMapping[fileType] ?: FileType.Entity.name.lowercase()
         val fullPath = Paths.get(options.outputDir).resolve(pkgPath).resolve(pkgName)
-        if (fullPath.notExists()) {
-            Files.createDirectories(fullPath)
-        }
+        fullPath.takeIf { it.notExists() }?.let { Files.createDirectories(it) }
+
         val outName = when (fileType) {
             FileType.Repository -> "${fileName}Repository"
             FileType.Input -> "${fileName}Input"
@@ -158,11 +161,9 @@ constructor(private val project: Project, private val options: GeneratorOptions,
      * 构建repository类型上下文. 忽略没有主键的Entity.
      */
     private fun buildRepositoryContext(tabRef: Table): Map<String, Any> {
-        val context = mutableMapOf<String, Any>()
-        if (tabRef.keyColumns.isEmpty()) {
-            throw IllegalStateException("[${tabRef.name}] primary key does not exist!\n")
-        }
+        check(tabRef.keyColumns.isNotEmpty()) { "[${tabRef.name}] primary key does not exist!\n" }
 
+        val context = mutableMapOf<String, Any>()
         val keyClassName = tabRef.allColumns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
         context["entityKeyType"] = keyClassName
 
@@ -185,14 +186,20 @@ constructor(private val project: Project, private val options: GeneratorOptions,
             .map { it.jvmType.javaObjectType.name }
             .filter { !it.startsWith("java.lang") }
             .toSet()
-        if (options.superClass.isNotBlank()) {
-            imports = imports.plus(options.superClass)
-        }
-        if (fileType == FileType.Input && options.inputType) {
-            val pkgPath = options.rootPackage
-            val pkgName = fileTypeMapping[FileType.Entity]
-            imports = imports.plus("${pkgPath}.${pkgName}.${tabRef.className}")
-        }
+        tabRef.columns
+            .firstOrNull { col -> col.nullable }
+            ?.let { _ -> imports = imports.plus("org.jetbrains.annotations.Nullable") };
+        options.superClass
+            .takeIf { it.isNotBlank() }
+            ?.let { superClass -> imports = imports.plus(superClass) };
+        fileType
+            .takeIf { it == FileType.Input && options.inputType }
+            ?.let {
+                val pkgPath = options.rootPackage
+                val pkgName = fileTypeMapping[FileType.Entity]
+                imports = imports.plus("${pkgPath}.${pkgName}.${tabRef.className}")
+            }
+
         return context
             .plus("imports" to imports)
             .plus("table" to tabRef)
