@@ -44,48 +44,40 @@ class CodeGenerator(
         val extensionsRootType = ExtensionsRootType.getInstance()
         val resource = extensionsRootType.findResourceDirectory(PluginId.findId(pluginId)!!, templatePath, false)
         val outLogs = StringBuilder()
-        if (resource.notExists()) {
+        check(resource.exists()) {
             outLogs.append("Resource director [${resource}] not exists!\n")
             return outLogs.toString()
+        }
+
+        val logOut: (String) -> Unit = {
+            outLogs.append(it)
+            log.debug(it)
         }
 
         val outFiles = mutableListOf<Path>()
         this.tables = applyNaming(tables)
         val fileTypes = relateFileType(options.entityType, options.repositoryType, options.inputType)
         fileTypes.forEach {
-            val templateFile = getTemplate(resource, it).apply {
-                if (notExists()) {
-                    val line = "Template File $this not Exists!\n"
-                    log.error(line)
-                    outLogs.append(line)
-                }
-            }
+            val templateFile = getTemplate(resource, it)
 
             tables.forEach { tab ->
                 getTargetFile(it, tab.className).let { fl ->
                     if (fl.exists()) {
-                        val line: String
                         if (options.fileMode == FileMode.Overwrite) {
-                            line = "Delete existing file ${fl.name}\n"
+                            logOut("Delete existing file [${fl.name}]\n")
                             Files.delete(fl)
                         } else {
-                            line = "Skip existing files [${fl.name}]\n"
+                            logOut("Skip existing file [${fl.name}]\n")
                         }
-                        log.warn(line)
-                        outLogs.append(line)
                     }
+                    // Don't Change it to else!!!! Mainly for detailed output logs.
                     if (fl.notExists()) {
                         val context = buildContext(it, tab)
-                        var line = "Ready to render template [${templateFile}]\n"
-                        log.warn(line)
-                        outLogs.append(line)
+                        logOut("Ready to render template [${templateFile.name}]\n")
                         // render template
                         templateEngine.render(fl, templateFile, context)
+                        logOut("Generated File => [${fl}]\n")
                         outFiles.add(fl)
-
-                        line = "Generated File => [${fl}]\n"
-                        log.info(line)
-                        outLogs.append(line)
                     }
                 }
             }
@@ -117,9 +109,11 @@ class CodeGenerator(
      * 获取模板文件
      */
     private fun getTemplate(resource: Path, fileType: FileType): Path {
-        return resource
+        val tmpFile = resource
             .resolve(options.framework.name.lowercase())
             .resolve("${fileType.name.lowercase()}.${options.language.name.lowercase()}.vm")
+        check(tmpFile.exists()) { "Template file [${tmpFile.fileName}] not found!" }
+        return tmpFile
     }
 
     /**
