@@ -115,7 +115,7 @@ val applyRule: (String, StrategyRule) -> String = { source, rule ->
 fun naming(name: String, rules: List<StrategyRule>, target: OptTarget = OptTarget.Table): String {
     var dstName = name
     rules
-        .filter { it.optValue.isNotBlank() && (it.target == target.name) }
+        .filter { it.optValue.isNotBlank() }
         .takeIf { it.isNotEmpty() }
         ?.let { it.forEach { rule -> run { dstName = applyRule(dstName, rule) } } }
 

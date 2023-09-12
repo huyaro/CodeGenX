@@ -1,6 +1,7 @@
 package dev.huyaro.gen.ui
 
 import com.intellij.database.psi.DbTable
+import com.intellij.database.util.DasUtil
 import com.intellij.database.view.actions.font
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
@@ -23,10 +24,7 @@ import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.ColumnInfo
 import com.intellij.util.ui.ListTableModel
 import dev.huyaro.gen.model.*
-import dev.huyaro.gen.util.buildOptions
-import dev.huyaro.gen.util.isNamingNormal
-import dev.huyaro.gen.util.naming
-import dev.huyaro.gen.util.toUnderline
+import dev.huyaro.gen.util.*
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.event.ItemEvent
@@ -179,6 +177,7 @@ class GeneratorDialog(
                         chkInput = checkBox(FileType.Input.name)
                             .bindSelected(options::inputType)
                             .enabledIf(chkEntity.selected)
+                            .visible(false)
                     }.rowComment("Entity type must be selected!")
                 }
             }, {
@@ -208,11 +207,9 @@ class GeneratorDialog(
                     .horizontalAlign(HorizontalAlign.FILL)
             }.rowComment("Use commas to separate multiple items")
             row {
-                label("Configure naming rules")
+                label("Naming rules         ↓")
                 contextHelp(
-                    "1.The naming rule object is the [original table name]  " +
-                            "2.The test function is only for [table objects]  " +
-                            "3.Test the configuration using the [last button] on the toolbar.",
+                    "Use the last button on the toolbar [Test Rules] to output detailed logs.",
                     "Usage help"
                 )
             }
@@ -227,10 +224,9 @@ class LoggerComponent(private val txtLog: Cell<JBTextArea>) {
     fun flush(lines: String) {
         val logComp = txtLog.component
         val nowTime = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+            .ofPattern("yyyy-MM-dd HH:mm:ss")
             .format(LocalDateTime.now())
-        val timeLine = ">>>>>>>>>>$nowTime"
-        logComp.insert("\n$timeLine\n$lines\n", logComp.text.length)
+        logComp.insert("\n>>>$nowTime\n$lines\n", logComp.text.length)
         logComp.autoscrolls = true
     }
 }
@@ -274,10 +270,10 @@ private class StrategyTableInfo(
     fun initTable(): JBScrollPane {
         // add toolbar
         val decorator = ToolbarDecorator.createDecorator(table)
-        // add "test" tool button
-        val testButtonAction = TestButtonAction(tableList, tableModel, logger)
+        // add "test" tool button, only test first table
+        val testButtonAction = TestButtonAction(tableList[0], tableModel, logger)
         // Disable when there is no data in the table
-        testButtonAction.addCustomUpdater { tableModel.items.isNotEmpty() }
+        // testButtonAction.addCustomUpdater { tableModel.items.isNotEmpty() }
         decorator.addExtraAction(testButtonAction)
         // override "add" event
         decorator.setAddAction { _ -> addDefaultRow() }
@@ -361,31 +357,36 @@ private class StrategyTableColumnInfo(name: String) : ColumnInfo<StrategyRule, S
  * @date 2023-1-3
  */
 private class TestButtonAction(
-    private val dbTables: List<DbTable>,
+    private val table: DbTable,
     private val tableModel: ListTableModel<StrategyRule>,
     private val logger: LoggerComponent
 ) :
-    AnActionButton("Test Rule...", AllIcons.Actions.Checked) {
-    private lateinit var nameMapping: Map<String, String>
+    AnActionButton("Test Rules", AllIcons.Actions.Compile) {
 
     override fun actionPerformed(e: AnActionEvent) {
         // Filter not blank value and table rules
-        val filterRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Table.name }
-        if (filterRules.isEmpty()) {
-            logger.flush("No applicable rules found! Please add rules first!")
-            return
-        }
+        val tableRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Table.name }
+        val columnRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Column.name }
+        // handle table naming rule
+        logger.flush("==========Apply naming rule testing (Test only one table)==========")
+        val namingTable = table.name to namingChoose(table.name, tableRules, OptTarget.Table)
+        var tableOutLog = "[${namingTable.first}] ==> [${namingTable.second}]"
+        // handle column naming rules
+        val cols = DasUtil.getColumns(table)
+            .map { col ->
+                mapOf(col.name to namingChoose(col.name, columnRules))
+            }.reduce { acc, map -> acc.plus(map) }
+        val maxLen = cols.maxOf { it.key.length }
+        val colOutLogs = cols
+            ?.map { (col, cls) -> "    [${col.padEnd(maxLen)}]  ==>  [$cls]" }
+            ?.joinToString(separator = "\n")
+        // merge logs and output
+        tableOutLog += "\n$colOutLogs"
+        logger.flush(tableOutLog)
+    }
 
-        // Circular apply rules
-        nameMapping = dbTables.map { tab ->
-            mapOf(tab.name to naming(tab.name, filterRules))
-        }.reduce { acc, map -> acc.plus(map) }
-
-        val maxLen = dbTables.maxOf { it.name.length }
-        logger.flush("\n========Test Mapping [Table] And [Class]========")
-        val logs = nameMapping
-            .map { (tab, cls) -> "[${tab.padEnd(maxLen)}]  ==>  [$cls]" }
-            .joinToString(separator = "\n")
-        logger.flush(logs)
+    private fun namingChoose(source: String, rules: List<StrategyRule>, target: OptTarget = OptTarget.Column): String {
+        return if (rules.isNotEmpty()) naming(source, rules, target)
+        else namingByTarget(source, target)
     }
 }

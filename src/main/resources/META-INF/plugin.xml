@@ -22,6 +22,13 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+        <h4>0.1.7</h4>
+        <ul>
+          <li>
+          Remove input generation type. Replace using <a href="https://github.com/huyaro/jimmer-dto-lang">DTO plugin</a>
+          </li>
+          <li>Naming rule test adds column name output</li>
+        </ul>
         <h4>0.1.6</h4>
         <ul>
           <li>Support @Nullable(org.jetbrains.annotations) in entity</li>
