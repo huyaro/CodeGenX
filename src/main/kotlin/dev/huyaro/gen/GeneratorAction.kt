@@ -82,8 +82,8 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     private val options = initLogs(buildOptions(dataModel.modules[0]), dataModel.tables)
 
     init {
+        super.init()
         title = dialogTitle
-        init()
     }
 
     override fun createCenterPanel(): JComponent {

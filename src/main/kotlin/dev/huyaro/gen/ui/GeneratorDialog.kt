@@ -63,14 +63,15 @@ class GeneratorDialog(
         genPanel.add(optionPanel, BorderLayout.NORTH)
 
         val logPanel = panel {
-            group("Logs") {
-                row {
-                    txtLog = textArea().rows(10)
-                        .horizontalAlign(HorizontalAlign.FILL)
-                        .bindText(options::logs)
-                        .font(Font("Hack", Font.ROMAN_BASELINE, 14))
-                    txtLog.component.isEditable = false
-                }
+            row {
+                label("Logs")
+            }
+            row {
+                txtLog = textArea().rows(10)
+                    .horizontalAlign(HorizontalAlign.FILL)
+                    .bindText(options::logs)
+                    .font(Font("Hack", Font.ROMAN_BASELINE, 14))
+                txtLog.component.isEditable = false
             }
         }
 

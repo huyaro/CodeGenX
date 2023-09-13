@@ -14,14 +14,19 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Simple code generator
-    Features:
+    Code Generator Features:
     <ul>
-      <li>Generate some codes from database tables</li>
-      <li>Support mapping database tables to the Jimmer framework</li>
+      <li>Generate <a href="https://github.com/babyfish-ct/jimmer">jimmer framework</a> entities and repositories based on the database table model</li>
+      <li>Use a mix of naming strategies for table and column names</li>
+      <li>Output detailed logs of named tests and code generation</li>
+      <li>Support custom database type mapping and persistence</li>
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+       <h4>0.1.8</h4>
+        <ul>
+          <li>UI optimization</li>
+        </ul>
         <h4>0.1.7</h4>
         <ul>
           <li>

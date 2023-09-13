@@ -30,7 +30,7 @@ import javax.swing.table.TableColumn
  * @date 2022-11-14
  * @description Config Dialog
  */
-class TypesDialog constructor(private val project: Project?) {
+class TypesDialog(private val project: Project?) {
     private val tableModel = ListTableModel<TypePair>(
         TableColumnInfo("Tag"),
         TableColumnInfo("JdbcType"),
