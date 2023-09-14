@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -15,6 +16,7 @@ class TypeState {
     private val buildInTypes = mapOf<KClass<*>, Set<String>>(
         Int::class to setOf("int", "integer", "smallint", "mediumint", "tinyint"),
         String::class to setOf("char", "nchar", "varchar", "nvarchar", "clob", "nclob"),
+        UUID::class to setOf("uuid"),
         Double::class to setOf("float", "real"),
         Boolean::class to setOf("bool", "boolean"),
         Long::class to setOf("bigint"),

@@ -36,7 +36,9 @@ class TypeRegistration : PersistentStateComponent<TypeState> {
     }
 
     override fun loadState(state: TypeState) {
-        typeState.mapping = state.mapping
+        state.mapping.forEach { (k, v) ->
+            typeState.mapping.putIfAbsent(k, v)
+        }
     }
 
     fun register(type: TypePair) =
