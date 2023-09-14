@@ -121,10 +121,10 @@ class GeneratorDialog(
                 val superCls = textField()
                     .label("SuperClass: ")
                     .bindText(options::superClass)
-                    .enabled(false)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                     .comment("Select the superclass of entity. e.g.: com.hello.entity.BaseEntity")
+                superCls.component.isEditable = false
 
                 button("Choose...") {
                     val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass...", project)
