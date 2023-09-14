@@ -158,7 +158,12 @@ class CodeGenerator(
         check(tabRef.keyColumns.isNotEmpty()) { "[${tabRef.name}] primary key does not exist!\n" }
 
         val context = mutableMapOf<String, Any>()
-        val keyClassName = tabRef.allColumns.first { it.name == tabRef.keyColumns[0] }.jvmType.simpleName!!
+        val keyClassName = tabRef.allColumns
+            .first { it.name == tabRef.keyColumns[0] }
+            .let {
+                if (options.language == Language.Java) it.jvmType.javaObjectType.simpleName
+                else it.jvmType.simpleName
+            }!!
         context["entityKeyType"] = keyClassName
 
         val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
@@ -166,13 +171,17 @@ class CodeGenerator(
         superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
         val reposAnnot = "org.springframework.stereotype.Repository"
         context["entityName"] = tabRef.className
-        context["imports"] = listOf(entityCls, superClass, reposAnnot)
 
+        var importList = listOf(entityCls, superClass, reposAnnot)
+        if (keyClassName == "UUID") {
+            importList = importList.plus("java.util.UUID")
+        }
+        context["imports"] = importList
         return context
     }
 
     /**
-     * 构建entity与input类型上下文
+     * 构建entity类型上下文
      */
     private fun buildEntityContext(tabRef: Table, fileType: FileType): Map<String, Any> {
         val context = mapOf<String, Any>()
@@ -180,9 +189,20 @@ class CodeGenerator(
             .map { it.jvmType.javaObjectType.name }
             .filter { !it.startsWith("java.lang") }
             .toSet()
+        // 判断是否需要添加uuid
         tabRef.columns
-            .firstOrNull { col -> col.nullable }
-            ?.let { _ -> imports = imports.plus("org.jetbrains.annotations.Nullable") };
+            .firstOrNull() { it.primaryKey && it.jvmTypeName == "UUID" }
+            ?.let {
+                imports = imports.plus("org.babyfish.jimmer.sql.meta.UUIDIdGenerator")
+            }
+        // 判断是否需要添加@nullable,仅java需要
+        if (options.language == Language.Java) {
+            tabRef.columns
+                .firstOrNull { col -> col.nullable }
+                ?.let {
+                    imports = imports.plus("org.jetbrains.annotations.Nullable")
+                }
+        }
         options.superClass
             .takeIf { it.isNotBlank() }
             ?.let { superClass -> imports = imports.plus(superClass) };
