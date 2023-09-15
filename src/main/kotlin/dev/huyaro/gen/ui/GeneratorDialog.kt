@@ -76,7 +76,7 @@ class GeneratorDialog(
         }
 
         logger = LoggerComponent(txtLog)
-        val tablePanel = StrategyTableInfo(data.tables, options, logger).initTable()
+        val tablePanel = StrategyTableInfo(data.tables, options, logger, txtExcludeCols).initTable()
         genPanel.add(tablePanel, BorderLayout.CENTER)
 
         // add log panel
@@ -238,7 +238,8 @@ class LoggerComponent(private val txtLog: Cell<JBTextArea>) {
 private class StrategyTableInfo(
     val tableList: List<DbTable>,
     val options: GeneratorOptions,
-    val logger: LoggerComponent
+    val logger: LoggerComponent,
+    val txtComp: Cell<JBTextField>
 ) {
     private val tableModel = ListTableModel<StrategyRule>(
         StrategyTableColumnInfo("Operator"),
@@ -272,7 +273,7 @@ private class StrategyTableInfo(
         // add toolbar
         val decorator = ToolbarDecorator.createDecorator(table)
         // add "test" tool button, only test first table
-        val testButtonAction = TestButtonAction(tableList[0], tableModel, logger)
+        val testButtonAction = TestButtonAction(tableList[0], tableModel, txtComp, logger)
         // Disable when there is no data in the table
         // testButtonAction.addCustomUpdater { tableModel.items.isNotEmpty() }
         decorator.addExtraAction(testButtonAction)
@@ -360,6 +361,7 @@ private class StrategyTableColumnInfo(name: String) : ColumnInfo<StrategyRule, S
 private class TestButtonAction(
     private val table: DbTable,
     private val tableModel: ListTableModel<StrategyRule>,
+    private val excludeCols: Cell<JBTextField>,
     private val logger: LoggerComponent
 ) :
     AnActionButton("Test Rules", AllIcons.Actions.Compile) {
@@ -369,19 +371,21 @@ private class TestButtonAction(
         val tableRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Table.name }
         val columnRules = tableModel.items.filter { it.optValue.isNotBlank() && it.target == OptTarget.Column.name }
         // handle table naming rule
-        logger.flush("==========Apply naming rule testing (Test only one table)==========")
         val namingTable = table.name to namingChoose(table.name, tableRules, OptTarget.Table)
         var tableOutLog = "[${namingTable.first}] ==> [${namingTable.second}]"
-        // handle column naming rules
+        // handle column naming rules(Exclude columns after superclass fields)
+        val excludeColsArr = trimAndSplit(excludeCols.component.text)
         val cols = DasUtil.getColumns(table)
+            .filter { col -> !excludeColsArr.contains(col.name) }
             .map { col ->
                 mapOf(col.name to namingChoose(col.name, columnRules))
             }.reduce { acc, map -> acc.plus(map) }
         val maxLen = cols.maxOf { it.key.length }
+        logger.flush("==========Apply naming rule testing (Test only one table)==========")
         val colOutLogs = cols
             ?.map { (col, cls) -> "    [${col.padEnd(maxLen)}]  ==>  [$cls]" }
             ?.joinToString(separator = "\n")
-        // merge logs and output
+        // merge logs
         tableOutLog += "\n$colOutLogs"
         logger.flush(tableOutLog)
     }
