@@ -171,7 +171,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
             "[${it.name.padEnd(maxLen)}]  ==>  [${toCamelCase(it.name, true)}]"
         }
 
-        genOpts.logs += "============================Mapping [Table] And [Class]============================\n"
+        genOpts.logs += "============================Mapping [Table] to [Class]============================\n"
         genOpts.logs += logs
         return genOpts
     }

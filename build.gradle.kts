@@ -1,23 +1,16 @@
-import com.jetbrains.plugin.structure.base.utils.simpleName
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.name
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.21"
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.kotlin.jvm") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.15.0"
 }
 
 group = "dev.huyaro.gen"
-version = "0.2.0"
+version = "0.2.1"
 
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-}
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -50,7 +43,7 @@ tasks {
         val sourceRoot = "./src/main/resources/extensions/templates/jimmer"
         val templateRoot = "./build/idea-sandbox/config/extensions/dev.huyaro.gen.x/templates/jimmer"
         Files.list(Paths.get(sourceRoot))
-            .filter { it.fileName.simpleName.endsWith(".vm", true) }
+            .filter { it.fileName.name.endsWith(".vm", true) }
             .forEach {
                 copy {
                     from(it)
@@ -62,7 +55,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("222")
-        untilBuild.set("232.*")
+        untilBuild.set("233.*")
     }
 
     signPlugin {
