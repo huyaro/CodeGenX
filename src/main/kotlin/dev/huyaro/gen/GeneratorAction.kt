@@ -3,6 +3,7 @@ package dev.huyaro.gen
 import com.intellij.database.psi.DbTable
 import com.intellij.database.view.getSelectedPsiElements
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.ModuleManager
@@ -71,6 +72,10 @@ internal class GeneratorAction : DumbAwareAction() {
             visible = false
         }
         e.presentation.isEnabledAndVisible = visible
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 }
 
