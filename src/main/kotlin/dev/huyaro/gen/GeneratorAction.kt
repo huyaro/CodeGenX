@@ -134,11 +134,16 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                             try {
                                 val outLogs = CodeGenerator(project, options, tableList).generate()
                                 genDialog.logger.flush(outLogs)
-                                notify("Generate code succeed!", project)
+                                notify(
+                                    "Generate Code",
+                                    "The code has been successfully generated!",
+                                    project
+                                )
                             } catch (e: RuntimeException) {
                                 log.error("Generate Error: ${e.message}")
                                 notify(
-                                    "Generate code failed! ${e.message}",
+                                    "Generate Code",
+                                    "Build failure!! <b>Error Message</b>: <p>${e.message}<p>",
                                     project,
                                     notifyType = NotificationType.ERROR
                                 )

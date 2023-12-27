@@ -111,13 +111,13 @@ fun buildTable(
  * Popup Notifications
  */
 fun notify(
+    title: String,
     content: String,
     project: Project,
-    notifyGroup: String = "Code-Notification",
     notifyType: NotificationType = NotificationType.INFORMATION
 ) {
     NotificationGroupManager.getInstance()
-        .getNotificationGroup(notifyGroup)
-        .createNotification(content, notifyType)
+        .getNotificationGroup("CodeGenX-Notification")
+        .createNotification(title, content, notifyType)
         .notify(project)
 }

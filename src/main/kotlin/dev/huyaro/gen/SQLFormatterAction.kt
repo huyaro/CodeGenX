@@ -45,10 +45,11 @@ class SQLFormatterAction : AnAction() {
 
         if (resultSql.isNotBlank()) {
             CopyPasteManager.getInstance().setContents(StringSelection(resultSql))
-            evt.project?.let { notify("SQL statement has been copied.", it) }
+            evt.project?.let { notify("Jimmer SQL", "SQL statement has been copied.", it) }
         } else {
             evt.project?.let {
                 notify(
+                    "Jimmer SQL",
                     "Bad SQL statement!!!", it,
                     notifyType = NotificationType.ERROR
                 )

@@ -119,9 +119,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!--通知服务-->
-        <notificationGroup id="Code-Notification"
-                           displayType="BALLOON"
-                           key="code.gen.default"/>
+        <notificationGroup id="CodeGenX-Notification" displayType="BALLOON"/>
 
         <!-- 用户自定义类型存储-->
         <applicationService id="dev.huyaro.genX.RegisteredType"
