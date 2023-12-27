@@ -2,7 +2,10 @@ package dev.huyaro.gen.util
 
 import com.intellij.database.psi.DbTable
 import com.intellij.database.util.DasUtil
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.util.io.isDirectory
 import dev.huyaro.gen.meta.Column
@@ -101,4 +104,20 @@ fun buildTable(
         }
     }
     return table
+}
+
+
+/**
+ * Popup Notifications
+ */
+fun notify(
+    content: String,
+    project: Project,
+    notifyGroup: String = "Code-Notification",
+    notifyType: NotificationType = NotificationType.INFORMATION
+) {
+    NotificationGroupManager.getInstance()
+        .getNotificationGroup(notifyGroup)
+        .createNotification(content, notifyType)
+        .notify(project)
 }

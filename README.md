@@ -10,7 +10,8 @@ CodeGenX
 - Automatically add excluded columns from super class
 - Custom mapping and persistence of database types and jvm types
 - Preview the results to be generated
-- Detailed log output
+- Detailed operation logs are output
+- Supports copying and pasting SQL statements in jimmer console logs
 
 #### Usage
 ![Usage](screenshot/usage.png)
@@ -21,6 +22,9 @@ CodeGenX
 
 - RegisteredType
 ![registeredType](screenshot/registeredType.png)
+
+- SQL Log Copy-Paste
+![sqlCopyAndPaste](screenshot/sqlCopy.png)
 
 - Install Plugin
 ![IDEA plugin](screenshot/plugin.png)

@@ -2,7 +2,6 @@ package dev.huyaro.gen
 
 import com.intellij.database.psi.DbTable
 import com.intellij.database.view.getSelectedPsiElements
-import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
@@ -25,6 +24,7 @@ import dev.huyaro.gen.ui.GeneratorDialog
 import dev.huyaro.gen.ui.TypesDialog
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.buildTable
+import dev.huyaro.gen.util.notify
 import dev.huyaro.gen.util.toCamelCase
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import java.awt.Dimension
@@ -117,12 +117,15 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                         options.author.isEmpty() -> {
                             Messages.showMessageDialog("Author Can't be empty!", "Warning", null)
                         }
+
                         options.rootPackage.isEmpty() -> {
                             Messages.showMessageDialog("Package Can't be empty!", "Warning", null)
                         }
+
                         !options.entityType -> {
                             Messages.showMessageDialog("FileType Can't be empty!", "Warning", null)
                         }
+
                         else -> {
                             // fetch table data
                             val tableList = dataModel.tables.map {
@@ -131,10 +134,14 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
                             try {
                                 val outLogs = CodeGenerator(project, options, tableList).generate()
                                 genDialog.logger.flush(outLogs)
-                                notify("Generate code succeed!")
+                                notify("Generate code succeed!", project)
                             } catch (e: RuntimeException) {
                                 log.error("Generate Error: ${e.message}")
-                                notify("Generate code failed! ${e.message}", NotificationType.ERROR)
+                                notify(
+                                    "Generate code failed! ${e.message}",
+                                    project,
+                                    notifyType = NotificationType.ERROR
+                                )
                             }
                         }
                     }
@@ -152,15 +159,6 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
         return tabPanel
     }
 
-    /**
-     * Popup Notifications
-     */
-    private fun notify(content: String, notifyType: NotificationType = NotificationType.INFORMATION) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("dev.huyaro.genX.Notification")
-            .createNotification(content, notifyType)
-            .notify(project)
-    }
 
     /**
      * build logs

@@ -121,3 +121,18 @@ fun naming(name: String, rules: List<StrategyRule>, target: OptTarget = OptTarge
 
     return namingByTarget(dstName, target)
 }
+
+/**
+ * wrapper values in sql statements
+ */
+fun valueWrapper(str: String): String {
+    return if (str.isBlank()) {
+        ""
+    } else {
+        if (str.matches(Regex("[-+]?\\d+(\\.\\d+)?"))) {
+            " $str "
+        } else {
+            " \'$str\' "
+        }
+    }
+}
