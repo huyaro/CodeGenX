@@ -13,10 +13,10 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBTabbedPane
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.RowLayout
 import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.JBEmptyBorder
 import dev.huyaro.gen.model.DataModel
 import dev.huyaro.gen.model.GeneratorOptions
@@ -94,7 +94,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     override fun createCenterPanel(): JComponent {
         val tabPanel = JBTabbedPane()
         tabPanel.minimumSize = Dimension(400, 450)
-        tabPanel.preferredSize = Dimension(800, 900)
+        tabPanel.preferredSize = Dimension(850, 950)
 
         val genDialog = GeneratorDialog(project, options, dataModel)
         val genPanel = genDialog.initPanel()
@@ -103,7 +103,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
             row {
                 genPanel.border = JBEmptyBorder(10)
                 scrollCell(genPanel)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
                     .resizableColumn()
             }
                 .resizableRow()
@@ -112,7 +112,8 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
             row {
                 button("Cancel") {
                     super.close(0, true)
-                }.horizontalAlign(HorizontalAlign.RIGHT)
+                }
+                    .align(AlignX.RIGHT)
                     .resizableColumn()
 
                 button("Generate") {

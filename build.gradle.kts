@@ -9,13 +9,13 @@ plugins {
 }
 
 group = "dev.huyaro.gen"
-version = "0.2.2"
+version = "0.2.3"
 
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.2.5")
+    version.set("2023.1.5")
     type.set("IU") // Target IDE Platform
     downloadSources.set(false)
     updateSinceUntilBuild.set(true)
@@ -54,7 +54,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("222")
+        sinceBuild.set("231")
         untilBuild.set("233.*")
     }
 

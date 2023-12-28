@@ -1,12 +1,12 @@
 package dev.huyaro.gen.ui
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.Messages
-import com.intellij.ui.AnActionButton
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
@@ -186,15 +186,15 @@ private class TableColumnInfo(name: String) : ColumnInfo<TypePair, String>(name)
 
     override fun valueOf(item: TypePair): String {
         return when {
-            name.equals("Tag") -> item.tag.name
-            name.equals("JdbcType") -> item.jdbcType
-            name.equals("JvmType") -> item.readJvmType().javaObjectType.name
+            name == "Tag" -> item.tag.name
+            name == "JdbcType" -> item.jdbcType
+            name == "JvmType" -> item.readJvmType().javaObjectType.name
             else -> ""
         }
     }
 
     override fun isCellEditable(item: TypePair?): Boolean {
-        return item?.tag == Tag.CUSTOM && !name.equals("Tag")
+        return item?.tag == Tag.CUSTOM && name != "Tag"
     }
 
     override fun setValue(item: TypePair?, value: String?) {
@@ -210,7 +210,7 @@ private class ResetButtonAction(
     private val project: Project?,
     private val tableModel: ListTableModel<TypePair>
 ) :
-    AnActionButton("Reset", AllIcons.Actions.Refresh) {
+    AnAction("Reset", "Restore all types to the default state", AllIcons.Actions.Refresh) {
     private val typeService = TypeRegistration.newInstance()
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -226,7 +226,6 @@ private class ResetButtonAction(
             }
             typeService.typeState.initTypes()
             typeService.typeState.mapping.values.forEach { tableModel.addRow(it) }
-            // tableScroll.verticalScrollBar.value = tableScroll.verticalScrollBar.minimum
         }
     }
 }

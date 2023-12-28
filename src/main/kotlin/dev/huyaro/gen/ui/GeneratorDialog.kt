@@ -7,20 +7,19 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
 import com.intellij.ide.util.TreeJavaClassChooserDialog
 import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.ui.AnActionButton
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.ColumnInfo
 import com.intellij.util.ui.ListTableModel
@@ -69,7 +68,7 @@ class GeneratorDialog(
             }
             row {
                 txtLog = textArea().rows(10)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
                     .bindText(options::logs)
                     .font(Font("Hack", Font.ROMAN_BASELINE, 14))
                 txtLog.component.isEditable = false
@@ -102,7 +101,7 @@ class GeneratorDialog(
 
                 txtPkg = textField().label("Package: ")
                     .bindText(options::rootPackage)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
                     .resizableColumn()
                     .comment("Select root package")
                 button("Choose...") {
@@ -122,7 +121,7 @@ class GeneratorDialog(
                 val superCls = textField()
                     .label("SuperClass: ")
                     .bindText(options::superClass)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
                     .resizableColumn()
                     .comment("Select the superclass of entity. e.g.: com.hello.entity.BaseEntity")
                 superCls.component.isEditable = false
@@ -156,7 +155,7 @@ class GeneratorDialog(
                     fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
                 ).bindText(options::outputDir)
                     .gap(RightGap.SMALL)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
             }.layout(RowLayout.PARENT_GRID)
                 .rowComment("Select the output directory. e.g.: /Project/src/main/java")
 
@@ -164,7 +163,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("FileMode: ") {
-                            FileMode.entries.forEach {
+                            FileMode.values().forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the file output method")
@@ -186,7 +185,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("Language: ") {
-                            Language.entries.forEach {
+                            Language.values().forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the language")
@@ -194,7 +193,7 @@ class GeneratorDialog(
 
                     buttonsGroup {
                         row("Framework: ") {
-                            Framework.entries.forEach {
+                            Framework.values().forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the framework")
@@ -206,7 +205,7 @@ class GeneratorDialog(
                 txtExcludeCols = textField()
                     .label("Exclude columns: ")
                     .bindText(options::excludeCols)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
             }.rowComment("Use commas to separate multiple items")
             row {
                 label("Naming rules         ↓")
@@ -250,9 +249,9 @@ private class StrategyTableInfo(
     )
     private var table = JBTable(tableModel)
     private val optItems = mapOf(
-        0 to Operator.entries.map { it.name },
-        1 to OptTarget.entries.map { it.name },
-        2 to OptPosition.entries.map { it.name }
+        0 to Operator.values().map { it.name },
+        1 to OptTarget.values().map { it.name },
+        2 to OptPosition.values().map { it.name }
     )
 
     init {
@@ -275,8 +274,6 @@ private class StrategyTableInfo(
         val decorator = ToolbarDecorator.createDecorator(table)
         // add "test" tool button, only test first table
         val testButtonAction = TestButtonAction(tableList[0], tableModel, txtComp, logger)
-        // Disable when there is no data in the table
-        // testButtonAction.addCustomUpdater { tableModel.items.isNotEmpty() }
         decorator.addExtraAction(testButtonAction)
         // override "add" event
         decorator.setAddAction { _ -> addDefaultRow() }
@@ -365,7 +362,7 @@ private class TestButtonAction(
     private val excludeCols: Cell<JBTextField>,
     private val logger: LoggerComponent
 ) :
-    AnActionButton("Test Rules", AllIcons.Actions.Compile) {
+    AnAction("Test Rules", "Test whether the rules meet expectations", AllIcons.Actions.Compile) {
 
     override fun actionPerformed(e: AnActionEvent) {
         // Filter not blank value and table rules

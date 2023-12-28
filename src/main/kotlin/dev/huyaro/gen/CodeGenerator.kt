@@ -191,7 +191,7 @@ class CodeGenerator(
             .toSet()
         // 判断是否需要添加uuid
         tabRef.columns
-            .firstOrNull() { it.primaryKey && it.jvmTypeName == "UUID" }
+            .firstOrNull { it.primaryKey && it.jvmTypeName == "UUID" }
             ?.let {
                 imports = imports.plus("org.babyfish.jimmer.sql.meta.UUIDIdGenerator")
             }
@@ -205,7 +205,7 @@ class CodeGenerator(
         }
         options.superClass
             .takeIf { it.isNotBlank() }
-            ?.let { superClass -> imports = imports.plus(superClass) };
+            ?.let { superClass -> imports = imports.plus(superClass) }
         fileType
             .takeIf { it == FileType.Input && options.inputType }
             ?.let {

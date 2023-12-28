@@ -29,7 +29,7 @@ data class GeneratorOptions(
     var superClass: String = "",
     var entityType: Boolean = true,
     var repositoryType: Boolean = true,
-    var inputType:Boolean = false,
+    var inputType: Boolean = false,
     var language: Language = Language.Java,
     var framework: Framework = Framework.Jimmer,
     var excludeCols: String = "",

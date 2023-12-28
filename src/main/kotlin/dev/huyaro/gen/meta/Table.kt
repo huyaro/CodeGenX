@@ -6,7 +6,7 @@ package dev.huyaro.gen.meta
  * @author huyaro
  * @date 2022-10-10
  */
-data class Table (
+data class Table(
     /**
      * 表名称
      */
@@ -40,6 +40,6 @@ data class Table (
     /**
      * 所有字段
      */
-    val allColumns : MutableList<Column> = mutableListOf()
+    val allColumns: MutableList<Column> = mutableListOf()
 )
 
