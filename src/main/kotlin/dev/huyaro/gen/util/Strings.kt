@@ -4,7 +4,11 @@ import dev.huyaro.gen.model.Operator
 import dev.huyaro.gen.model.OptPosition
 import dev.huyaro.gen.model.OptTarget
 import dev.huyaro.gen.model.StrategyRule
+import java.nio.file.LinkOption
+import java.nio.file.Paths
 import java.util.*
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 
 /**
  * @author huyaro
@@ -135,4 +139,27 @@ fun valueWrapper(str: String): String {
             " \'$str\' "
         }
     }
+}
+
+/**
+ * find root package name
+ */
+private fun rootPackagePath(projectPath: String): String {
+    val rootPath = Paths.get(projectPath)
+    val subDirs = rootPath.listDirectoryEntries()
+    if (subDirs.isEmpty()) {
+        return projectPath
+    }
+    val filterDirs = subDirs.filter { it.isDirectory(LinkOption.NOFOLLOW_LINKS) }
+    if (filterDirs.size == 1) {
+        return rootPackagePath(filterDirs[0].toString())
+    }
+    return subDirs[0].parent.toString()
+}
+
+fun rootPackageName(projectPath: String): String {
+    val rootPackagePath = rootPackagePath(projectPath)
+    return Paths.get(projectPath)
+        .relativize(Paths.get(rootPackagePath))
+        .joinToString(".")
 }

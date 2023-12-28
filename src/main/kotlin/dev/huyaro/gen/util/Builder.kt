@@ -8,15 +8,12 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
-import com.intellij.util.io.isDirectory
 import dev.huyaro.gen.meta.Column
 import dev.huyaro.gen.meta.Table
 import dev.huyaro.gen.model.GeneratorOptions
 import dev.huyaro.gen.model.Language
 import dev.huyaro.gen.model.TypeRegistration
 import org.jetbrains.jps.model.java.JavaSourceRootType
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * @author huyaro
@@ -32,19 +29,12 @@ fun buildOptions(module: Module): GeneratorOptions {
     val sourceRoot = ModuleRootManager.getInstance(module)
         .getSourceRoots(JavaSourceRootType.SOURCE)
         .first { vf -> vf.path.contains("src/main") }
-
-    var pkgRoot = ""
+        .path
     // guess root package
-    val sourceRootDir = Paths.get(sourceRoot.path)
-    Files.walk(sourceRootDir, 5)
-        .filter { it.isDirectory() && it != sourceRootDir && Files.list(it).count() > 1 }
-        .findFirst()
-        .ifPresent { p ->
-            pkgRoot = sourceRootDir.relativize(p).joinToString(separator = ".")
-        }
+    val rootPkg = rootPackageName(sourceRoot)
 
     return GeneratorOptions(
-        activeModule = module, author = username, rootPackage = pkgRoot, outputDir = sourceRoot.path
+        activeModule = module, author = username, rootPackage = rootPkg, outputDir = sourceRoot
     )
 }
 
