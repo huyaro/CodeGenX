@@ -6,6 +6,7 @@ import com.intellij.database.view.actions.font
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PackageChooserDialog
 import com.intellij.ide.util.TreeJavaClassChooserDialog
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -163,7 +164,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("FileMode: ") {
-                            FileMode.values().forEach {
+                            FileMode.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the file output method")
@@ -185,7 +186,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("Language: ") {
-                            Language.values().forEach {
+                            Language.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the language")
@@ -193,7 +194,7 @@ class GeneratorDialog(
 
                     buttonsGroup {
                         row("Framework: ") {
-                            Framework.values().forEach {
+                            Framework.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the framework")
@@ -249,9 +250,9 @@ private class StrategyTableInfo(
     )
     private var table = JBTable(tableModel)
     private val optItems = mapOf(
-        0 to Operator.values().map { it.name },
-        1 to OptTarget.values().map { it.name },
-        2 to OptPosition.values().map { it.name }
+        0 to Operator.entries.map { it.name },
+        1 to OptTarget.entries.map { it.name },
+        2 to OptPosition.entries.map { it.name }
     )
 
     init {
@@ -393,5 +394,9 @@ private class TestButtonAction(
     private fun namingChoose(source: String, rules: List<StrategyRule>, target: OptTarget = OptTarget.Column): String {
         return if (rules.isNotEmpty()) naming(source, rules, target)
         else namingByTarget(source, target)
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
     }
 }
