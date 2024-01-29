@@ -8,7 +8,7 @@
     <name>CodeGenX</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="huyaro.dev@outlook.com" url="https://github.com/huyaro">CodeGenX</vendor>
+    <vendor email="huyaro.dev@outlook.com" url="https://github.com/huyaro">Huyaro</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -24,6 +24,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+       <h4>0.2.4</h4>
+       <ul>
+         <li>The superClass selection box allows you to manually enter the package name</li>
+       </ul>
        <h4>0.2.3</h4>
        <ul>
          <li>The minimum version compatibility is changed to 2023.1.x</li>

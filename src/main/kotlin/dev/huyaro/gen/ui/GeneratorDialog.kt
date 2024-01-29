@@ -123,8 +123,9 @@ class GeneratorDialog(
                     .bindText(options::superClass)
                     .align(AlignX.FILL)
                     .resizableColumn()
-                    .comment("Select the superclass of entity. e.g.: com.hello.entity.BaseEntity")
-                superCls.component.isEditable = false
+                    .comment("Select or enter the superclass of entity")
+                // 避免外部包无法选择类, 让父类输入框可手动输入父类包名
+                // superCls.component.isEditable = false
 
                 button("Choose...") {
                     val classChooserDialog = TreeJavaClassChooserDialog("Choose SuperClass...", project)
