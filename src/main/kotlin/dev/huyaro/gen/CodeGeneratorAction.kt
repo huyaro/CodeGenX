@@ -21,8 +21,9 @@ import com.intellij.util.ui.JBEmptyBorder
 import dev.huyaro.gen.model.DataModel
 import dev.huyaro.gen.model.GeneratorOptions
 import dev.huyaro.gen.model.TypeRegistration
+import dev.huyaro.gen.ui.CodeGenerator
 import dev.huyaro.gen.ui.GeneratorDialog
-import dev.huyaro.gen.ui.TypesDialog
+import dev.huyaro.gen.ui.RegisteredTypeDialog
 import dev.huyaro.gen.util.buildOptions
 import dev.huyaro.gen.util.buildTable
 import dev.huyaro.gen.util.notify
@@ -37,7 +38,7 @@ import javax.swing.JComponent
  * @author huyaro
  * @date 2022-11-06
  */
-internal class GeneratorAction : DumbAwareAction() {
+class CodeGeneratorAction : DumbAwareAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = getEventProject(e)
@@ -82,7 +83,7 @@ internal class GeneratorAction : DumbAwareAction() {
 private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, dialogTitle: String) :
     DialogWrapper(project, null, true, IdeModalityType.MODELESS, false) {
 
-    private val log = Logger.getInstance(GeneratorAction::class.java)
+    private val log = Logger.getInstance(CodeGeneratorAction::class.java)
     private val typeService = TypeRegistration.newInstance()
     private val options = initLogs(buildOptions(dataModel.modules[0]), dataModel.tables)
 
@@ -164,7 +165,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
         tabPanel.add("Generator", genScrollPanel)
 
         // type dialog
-        val typesPanel = TypesDialog(project).initPanel()
+        val typesPanel = RegisteredTypeDialog(project).initPanel()
         tabPanel.add("RegisteredType", typesPanel)
 
         return tabPanel

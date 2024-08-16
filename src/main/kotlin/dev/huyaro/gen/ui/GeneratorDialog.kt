@@ -35,7 +35,7 @@ import javax.swing.JTextField
 import javax.swing.ListSelectionModel
 
 /**
- * Generator Dialog ui
+ * Generator Dialog
  *
  * @author huyaro
  * @date 2022-11-06
@@ -164,7 +164,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("FileMode: ") {
-                            FileMode.values().forEach {
+                            FileMode.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the file output method")
@@ -186,7 +186,7 @@ class GeneratorDialog(
                 panel {
                     buttonsGroup {
                         row("Language: ") {
-                            Language.values().forEach {
+                            Language.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the language")
@@ -194,7 +194,7 @@ class GeneratorDialog(
 
                     buttonsGroup {
                         row("Framework: ") {
-                            Framework.values().forEach {
+                            Framework.entries.forEach {
                                 radioButton(it.name, it)
                             }
                         }.rowComment("Select the framework")
@@ -250,9 +250,9 @@ private class StrategyTableInfo(
     )
     private var table = JBTable(tableModel)
     private val optItems = mapOf(
-        0 to Operator.values().map { it.name },
-        1 to OptTarget.values().map { it.name },
-        2 to OptPosition.values().map { it.name }
+        0 to Operator.entries.map { it.name },
+        1 to OptTarget.entries.map { it.name },
+        2 to OptPosition.entries.map { it.name }
     )
 
     init {

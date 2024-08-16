@@ -26,11 +26,13 @@ import javax.swing.table.TableColumn
 
 
 /**
+ * 系统内置的类型, 用于与数据库的类型进行对应. 可添加或删除类型, 插件会自动持久化.
+ *
  * @author huyaro
  * @date 2022-11-14
  * @description Config Dialog
  */
-class TypesDialog(private val project: Project?) {
+class RegisteredTypeDialog(private val project: Project?) {
     private val tableModel = ListTableModel<TypePair>(
         TableColumnInfo("Tag"),
         TableColumnInfo("JdbcType"),
@@ -185,10 +187,10 @@ class TypesDialog(private val project: Project?) {
 private class TableColumnInfo(name: String) : ColumnInfo<TypePair, String>(name) {
 
     override fun valueOf(item: TypePair): String {
-        return when {
-            name == "Tag" -> item.tag.name
-            name == "JdbcType" -> item.jdbcType
-            name == "JvmType" -> item.readJvmType().javaObjectType.name
+        return when (name) {
+            "Tag" -> item.tag.name
+            "JdbcType" -> item.jdbcType
+            "JvmType" -> item.readJvmType().javaObjectType.name
             else -> ""
         }
     }

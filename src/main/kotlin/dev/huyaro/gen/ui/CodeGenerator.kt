@@ -1,4 +1,4 @@
-package dev.huyaro.gen
+package dev.huyaro.gen.ui
 
 import com.intellij.codeInsight.actions.ReformatCodeProcessor
 import com.intellij.ide.extensionResources.ExtensionsRootType
@@ -36,7 +36,7 @@ class CodeGenerator(
 
     private val pluginId = "dev.huyaro.gen.x"
     private val templatePath = "templates"
-    private val fileTypeMapping = FileType.values().associateWith { it.name.lowercase() }
+    private val fileTypeMapping = FileType.entries.associateWith { it.name.lowercase() }
 
     private val templateEngine: VelocityTemplate = VelocityTemplate()
 

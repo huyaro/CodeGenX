@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.huyaro.gen"
-version = "0.2.4"
+version = "0.2.5"
 
 repositories {
     mavenCentral()
@@ -25,6 +25,7 @@ intellij {
 //    sandboxDir.set("${rootProject.rootDir}/idea-sandbox")
     plugins.set(
         listOf(
+            "org.jetbrains.kotlin",
             "com.intellij.java",
             "com.intellij.database"
         )
@@ -58,7 +59,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("231")
-        untilBuild.set("241.*")
+        untilBuild.set("243.*")
     }
 
     signPlugin {

@@ -24,6 +24,10 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+       <h4>0.2.5</h4>
+       <ul>
+         <li>Compatible with version 2024.2.x</li>
+       </ul>
        <h4>0.2.4</h4>
        <ul>
          <li>The superClass selection box allows you to manually enter the package name</li>
@@ -136,17 +140,41 @@
     </extensions>
 
     <actions>
-        <!--代码生成器-->
-        <action id="dev.huyaro.gen" class="dev.huyaro.gen.GeneratorAction"
-                text="CodeGenX" description="Code generator" popup="true">
+        <!--table-> entity&&repository 代码生成-->
+        <action id="dev.huyaro.gen.code"
+                class="dev.huyaro.gen.CodeGeneratorAction"
+                text="CodeGenX"
+                description="Code generator"
+                popup="true">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
         <!--SQL日志替换-->
-        <action class="dev.huyaro.gen.SQLFormatterAction" id="JimmerSQLFormatter"
+        <action id="dev.huyaro.sql"
+                class="dev.huyaro.gen.SQLFormatterAction"
                 text="Copy Jimmer SQL"
                 icon="DatabaseIcons.UtPLSQL"
                 description="Copy sql and replace parameters">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="last"/>
         </action>
+        <!--dto相关类型代码生成-->
+        <group id="dev.huyaro.gen.dto" text="Dto Types" description="Generate dto types" popup="true">
+            <add-to-group group-id="GenerateGroup" anchor="first" />
+            <action id="dev.huyaro.gen.dto.view"
+                    class="dev.huyaro.gen.DtoGeneratorAction"
+                    text="View Dto"
+                    description="Generate vite dto type">
+            </action>
+            <action id="dev.huyaro.gen.dto.input"
+                    class="dev.huyaro.gen.DtoGeneratorAction"
+                    text="Input Dto"
+                    description="Generate input dto type">
+            </action>
+            <action id="dev.huyaro.gen.dto.spec"
+                    class="dev.huyaro.gen.DtoGeneratorAction"
+                    text="Spec Dto"
+                    description="Generate spec dto type">
+            </action>
+        </group>
+
     </actions>
 </idea-plugin>
