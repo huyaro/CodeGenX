@@ -156,25 +156,5 @@
                 description="Copy sql and replace parameters">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="last"/>
         </action>
-        <!--dto相关类型代码生成-->
-        <group id="dev.huyaro.gen.dto" text="Dto Types" description="Generate dto types" popup="true">
-            <add-to-group group-id="GenerateGroup" anchor="first" />
-            <action id="dev.huyaro.gen.dto.view"
-                    class="dev.huyaro.gen.DtoGeneratorAction"
-                    text="View Dto"
-                    description="Generate vite dto type">
-            </action>
-            <action id="dev.huyaro.gen.dto.input"
-                    class="dev.huyaro.gen.DtoGeneratorAction"
-                    text="Input Dto"
-                    description="Generate input dto type">
-            </action>
-            <action id="dev.huyaro.gen.dto.spec"
-                    class="dev.huyaro.gen.DtoGeneratorAction"
-                    text="Spec Dto"
-                    description="Generate spec dto type">
-            </action>
-        </group>
-
     </actions>
 </idea-plugin>
