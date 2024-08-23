@@ -56,7 +56,7 @@ class CodeGenerator(
 
         val outFiles = mutableListOf<Path>()
         this.tables = applyNaming(tables)
-        val fileTypes = relateFileType(options.entityType, options.repositoryType, options.inputType)
+        val fileTypes = relateFileType(options.entityType, options.repositoryType, options.serviceType)
         fileTypes.forEach {
             val templateFile = getTemplate(resource, it)
 
@@ -91,15 +91,15 @@ class CodeGenerator(
     /**
      * 处理选中的文件类型. 当entity未选中时, repository不生效
      */
-    private fun relateFileType(entity: Boolean, repository: Boolean, inputType: Boolean): Set<FileType> {
+    private fun relateFileType(entity: Boolean, repository: Boolean, serviceType: Boolean): Set<FileType> {
         val fileTypes = mutableSetOf<FileType>()
         if (entity) {
             fileTypes.add(FileType.Entity)
             if (repository) {
                 fileTypes.add(FileType.Repository)
             }
-            if (inputType) {
-                fileTypes.add(FileType.Input)
+            if (serviceType) {
+                fileTypes.add(FileType.Service)
             }
         }
         return fileTypes
@@ -126,8 +126,8 @@ class CodeGenerator(
         fullPath.takeIf { it.notExists() }?.let { Files.createDirectories(it) }
 
         val outName = when (fileType) {
-            FileType.Repository -> "${fileName}Repository"
-            FileType.Input -> "${fileName}Input"
+            FileType.Repository -> if (options.framework == Framework.Jimmer) "${fileName}Repository" else "${fileName}Mapper"
+            FileType.Service -> "${fileName}Service"
             FileType.Entity -> fileName
         }
         return fullPath.resolve("$outName.${options.language.suffix}")
@@ -167,15 +167,28 @@ class CodeGenerator(
         context["entityKeyType"] = keyClassName
 
         val entityCls = "${options.rootPackage}.entity.${tabRef.className}"
-        var superClass = "org.babyfish.jimmer.spring.repository."
-        superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
-        val reposAnnot = "org.springframework.stereotype.Repository"
         context["entityName"] = tabRef.className
 
-        var importList = listOf(entityCls, superClass, reposAnnot)
-        if (keyClassName == "UUID") {
-            importList = importList.plus("java.util.UUID")
+        val importList = mutableListOf<String>()
+        importList.add(entityCls)
+
+        if(options.framework == Framework.Jimmer) {
+            var superClass = "org.babyfish.jimmer.spring.repository."
+            superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
+            val reposAnnot = "org.springframework.stereotype.Repository"
+            importList.add(superClass)
+            importList.add(reposAnnot)
+            if (keyClassName == "UUID") {
+                importList.add("java.util.UUID")
+            }
+        } else {
+            val superClass = "com.baomidou.mybatisplus.core.mapper.BaseMapper"
+            importList.add(superClass)
+            if (keyClassName == "UUID") {
+                importList.add("java.util.UUID")
+            }
         }
+
         context["imports"] = importList
         return context
     }
@@ -207,7 +220,7 @@ class CodeGenerator(
             .takeIf { it.isNotBlank() }
             ?.let { superClass -> imports = imports.plus(superClass) }
         fileType
-            .takeIf { it == FileType.Input && options.inputType }
+            .takeIf { it == FileType.Service && options.serviceType }
             ?.let {
                 val pkgPath = options.rootPackage
                 val pkgName = fileTypeMapping[FileType.Entity]

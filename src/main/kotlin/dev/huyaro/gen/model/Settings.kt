@@ -29,7 +29,7 @@ data class GeneratorOptions(
     var superClass: String = "",
     var entityType: Boolean = true,
     var repositoryType: Boolean = true,
-    var inputType: Boolean = false,
+    var serviceType: Boolean = false,
     var language: Language = Language.Java,
     var framework: Framework = Framework.Jimmer,
     var excludeCols: String = "",
@@ -58,7 +58,7 @@ enum class FileMode {
  */
 @ApiStatus.Internal
 enum class FileType {
-    Entity, Repository, Input
+    Entity, Repository, Service
 }
 
 /**
@@ -74,7 +74,7 @@ enum class Language(val suffix: String) {
  */
 @ApiStatus.Internal
 enum class Framework {
-    Jimmer
+    Jimmer, MyBatisPlus
 }
 
 // ==================For StrategyDialog==================

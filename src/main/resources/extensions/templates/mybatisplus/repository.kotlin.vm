@@ -1,0 +1,18 @@
+package ${fullPackage};
+
+#foreach($pkg in ${imports})
+import ${pkg};
+#end
+
+/**
+* <p>
+ * ${entityName}Repository 接口
+ * </p>
+*
+* @author ${author}
+* @date ${date}
+*/
+public interface ${entityName}Mapper extends BaseMapper<${entityName}> {
+
+}
+

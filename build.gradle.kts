@@ -1,6 +1,7 @@
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.name
+import kotlin.io.path.relativeTo
 
 plugins {
     id("java")
@@ -44,16 +45,16 @@ tasks {
     }
 
     prepareSandbox {
-        val sourceRoot = "./src/main/resources/extensions/templates/jimmer"
-        val templateRoot = "./build/idea-sandbox/config/extensions/dev.huyaro.gen.x/templates/jimmer"
-        Files.list(Paths.get(sourceRoot))
+        val sourceRoot = "./src/main/resources/extensions/templates"
+        val templateRoot = "./build/idea-sandbox/config/extensions/dev.huyaro.gen.x/templates"
+        Files.walk(Paths.get(sourceRoot), 2)
             .filter { it.fileName.name.endsWith(".vm", true) }
             .forEach {
                 copy {
                     from(it)
-                    into(Paths.get(templateRoot))
+                    into(Paths.get(templateRoot).resolve(Paths.get(sourceRoot).relativize(it)).parent)
                 }
-                // println("> Task :copy $it => ${Paths.get(templateRoot).resolve(it.fileName)} finished")
+                println("> Task :copy $it => ${Paths.get(templateRoot).resolve(it.fileName)} finished")
             }
     }
 
@@ -73,3 +74,4 @@ tasks {
         token.set(System.getenv("IDEA_PUBLISH_TOKEN"))
     }
 }
+
