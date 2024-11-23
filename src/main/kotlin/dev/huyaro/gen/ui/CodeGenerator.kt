@@ -172,7 +172,7 @@ class CodeGenerator(
         val importList = mutableListOf<String>()
         importList.add(entityCls)
 
-        if(options.framework == Framework.Jimmer) {
+        if (options.framework == Framework.Jimmer) {
             var superClass = "org.babyfish.jimmer.spring.repository."
             superClass += if (options.language == Language.Java) "JRepository" else "KRepository"
             val reposAnnot = "org.springframework.stereotype.Repository"
@@ -211,9 +211,12 @@ class CodeGenerator(
         // 判断是否需要添加@nullable,仅java需要
         if (options.language == Language.Java) {
             tabRef.columns
-                .firstOrNull { col -> col.nullable }
-                ?.let {
-                    imports = imports.plus("org.jetbrains.annotations.Nullable")
+                .map { col ->
+                    imports = if (col.nullable) {
+                        imports.plus("org.jetbrains.annotations.Nullable")
+                    } else {
+                        imports.plus("org.jetbrains.annotations.NotNull")
+                    }
                 }
         }
         options.superClass

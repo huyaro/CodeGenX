@@ -41,6 +41,8 @@ public interface ${table.getClassName()} #if("$!{superClass}" != "") extends ${s
     #end
     #if(${field.getNullable()})
     @Nullable
+    #else
+    @NotNull
     #end
     ${field.getJvmTypeName()} ${field.getPropName()}();
 

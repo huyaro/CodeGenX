@@ -74,7 +74,8 @@ enum class Language(val suffix: String) {
  */
 @ApiStatus.Internal
 enum class Framework {
-    Jimmer, MyBatisPlus
+    Jimmer
+    // , MyBatisPlus
 }
 
 // ==================For StrategyDialog==================

@@ -105,7 +105,7 @@ class GeneratorDialog(
                     .resizableColumn()
                     .comment("Select root package")
                 button("Choose...") {
-                    val chooserDialog = PackageChooserDialog("Choose Package", project)
+                    val chooserDialog = PackageChooserDialog("Choose Package", project!!)
                     chooserDialog.show()
                     val psiPackage = chooserDialog.selectedPackage
                     if (psiPackage != null) {

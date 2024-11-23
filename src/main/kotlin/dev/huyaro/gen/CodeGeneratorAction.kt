@@ -95,7 +95,7 @@ private class DslConfigDialogUI(val project: Project, val dataModel: DataModel, 
     override fun createCenterPanel(): JComponent {
         val tabPanel = JBTabbedPane()
         tabPanel.minimumSize = Dimension(400, 450)
-        tabPanel.preferredSize = Dimension(850, 950)
+        tabPanel.preferredSize = Dimension(850, 850)
 
         val genDialog = GeneratorDialog(project, options, dataModel)
         val genPanel = genDialog.initPanel()

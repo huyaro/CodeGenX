@@ -1,7 +1,7 @@
+
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.name
-import kotlin.io.path.relativeTo
 
 plugins {
     id("java")
@@ -19,7 +19,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2023.1.5")
+    version.set("2023.2.8")
     type.set("IU") // Target IDE Platform
     downloadSources.set(false)
     updateSinceUntilBuild.set(true)
@@ -59,8 +59,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("231")
-        untilBuild.set("242.*")
+        sinceBuild.set("232")
+        untilBuild.set("243.*")
     }
 
     signPlugin {
