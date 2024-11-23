@@ -24,6 +24,11 @@
     </ul>
   ]]></description>
     <change-notes><![CDATA[
+       <h4>0.2.6</h4>
+       <ul>
+         <li>Support @Notnull</li>
+         <li>Compatible versions 232-243.*</li>
+       </ul>
        <h4>0.2.5</h4>
        <ul>
          <li>Compatible with version 2024.2.x</li>
