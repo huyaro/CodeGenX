@@ -1,16 +1,17 @@
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.name
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.21"
+    id("org.jetbrains.kotlin.jvm") version "2.1.0"
     id("org.jetbrains.intellij") version "1.16.1"
 }
 
 group = "dev.huyaro.gen"
-version = "0.2.6"
+version = "0.2.7"
 
 repositories {
     mavenCentral()
@@ -19,9 +20,9 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2023.2.8")
+    version.set("2024.1.1")
     type.set("IU") // Target IDE Platform
-    downloadSources.set(false)
+    downloadSources.set(true)
     updateSinceUntilBuild.set(true)
 //    sandboxDir.set("${rootProject.rootDir}/idea-sandbox")
     plugins.set(
@@ -41,7 +42,7 @@ tasks {
         targetCompatibility = "17"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     }
 
     prepareSandbox {
@@ -59,8 +60,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("232")
-        untilBuild.set("243.*")
+        sinceBuild.set("241")
+        untilBuild.set("251.*")
     }
 
     signPlugin {

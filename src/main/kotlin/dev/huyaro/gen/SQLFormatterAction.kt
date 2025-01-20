@@ -4,6 +4,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ide.CopyPasteManager
 import dev.huyaro.gen.util.notify
 import dev.huyaro.gen.util.valueWrapper
@@ -25,7 +26,7 @@ class SQLFormatterAction : AnAction() {
     private val prettySqlQueryKey = "JDBC response status: "
 
     override fun actionPerformed(evt: AnActionEvent) {
-        val selectedText = evt.getRequiredData(CommonDataKeys.EDITOR).selectionModel.selectedText
+        val selectedText = evt.getData<Editor>(CommonDataKeys.EDITOR)?.selectionModel?.selectedText
         val resultSql = selectedText?.let {
             val replacedSql = it.replace("\n", " ")
             sqlReg.find(replacedSql)?.let { res ->
