@@ -9,6 +9,7 @@ import com.intellij.ide.util.TreeJavaClassChooserDialog
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -150,14 +151,20 @@ class GeneratorDialog(
                 }
             }.layout(RowLayout.PARENT_GRID)
 
-            row("OutputDir: ") {
-                outDir = textFieldWithBrowseButton(
-                    project = project,
-                    fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                ).bindText(options::outputDir)
+            row("Output: ") {
+                val textField = textField()
+                    .bindText(options::outputDir)  // 绑定到 options.outputDir
                     .gap(RightGap.SMALL)
                     .align(AlignX.FILL)
-            }.layout(RowLayout.PARENT_GRID)
+                    .resizableColumn()
+                    .component
+
+                button("Browse...") {
+                    val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
+                    val selectedFolder = FileChooser.chooseFile(descriptor, project, null)
+                    selectedFolder?.let { textField.text = it.path }
+                }
+            }.layout(RowLayout.INDEPENDENT)
                 .rowComment("Select the output directory. e.g.: /Project/src/main/java")
 
             twoColumnsRow({
