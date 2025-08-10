@@ -12,6 +12,7 @@ out/
 !**/src/main/**/out/
 idea-sandbox/
 .run/
+.intellijPlatform/**/*.xml
 
 ### Eclipse ###
 .apt_generated
